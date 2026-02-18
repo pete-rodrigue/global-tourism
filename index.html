@@ -213,7 +213,7 @@
   <h1>DC is supposed to be a global city.<br>It can take years to visit.</h1>
   <p class="subtitle"></p>
 
-  <div>
+  <div id="para_text">
     <p>I recently visited Mexico City. If you're a US citizen and you want to visit Mexico City from DC, you don't have to plan ahead. Famously, you don't even have to speak Spanish. You land at Benito Juarez International Airport, and a tired but friendly Aduana agent talks to you for 15 seconds before punching a green stamp into your passport, allowing you to visit for 30 days. You proceed to the city's expansive Metro system (or subject yourself to LA-grade car traffic).</p>
   <br>
   <p>If you're a Mexican citizen and you want to visit the US, you first have to fill out a DS-160 form. The State Department says this should take roughly 90 minutes. Questions include things like "Have you ever been 10-printed?" and "Have you ever served in, been a member of, or been involved with a paramilitary unit, vigilante unit, rebel group, guerrilla group, or insurgent organizations?" (If yes, please explain). You must answer the questions in English. It's unclear if the 90-minute estimate includes the time it takes to learn English. Then you have to schedule an in-person interview with a consular officer. The wait time for an appointment is six months. That officer will ask you questions about your personal finances, your family ties to Mexico, and your job. Assuming you "pass" the interview (whether you pass is largely up to this consular officer) you'll have to pay $185 for the privilege of visiting the US.</p>
@@ -320,8 +320,10 @@ if (window.location.hash) {
       });
       const h1 = document.querySelector('h1');
       const sub = document.querySelector('.subtitle');
+      const txt = document.querySelector('#para_text');
       if (h1) h1.style.display = 'none';
       if (sub) sub.style.display = 'none';
+      if (txt) txt.style.display = 'none';
       // Hide embed buttons in isolated mode
       target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
       document.body.style.padding = '12px';
