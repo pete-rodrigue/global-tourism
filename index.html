@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>US Visa Wait Times — A Global View</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --express: #3fb950;
+    --suspended: #f85149;
+    --americas: #bc8cff;
+    --europe: #58a6ff;
+    --asia: #d2a8ff;
+    --africa: #ffa657;
+    --middleeast: #79c0ff;
+    --oceania: #56d364;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    padding: 40px 20px 80px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.6rem;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #e6edf3, #8b949e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin-bottom: 48px;
+    max-width: 720px;
+  }
+  .chart-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 28px 24px;
+    margin-bottom: 36px;
+  }
+  .chart-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.35rem;
+    margin-bottom: 4px;
+  }
+  .chart-desc {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 18px;
+  }
+  svg { display: block; }
+  .axis text { fill: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 11px; }
+  .axis line, .axis path { stroke: var(--border); }
+  .axis-label { fill: var(--text-muted); font-size: 12px; font-family: 'DM Sans', sans-serif; }
+  .grid line { stroke: var(--border); stroke-opacity: 0.4; stroke-dasharray: 2,3; }
+  .grid .domain { display: none; }
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #1c2128;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    z-index: 100;
+    line-height: 1.5;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    max-width: 260px;
+  }
+  .tooltip strong { color: #fff; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; color: var(--text-muted); }
+  .legend-swatch {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .suspended-list {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: rgba(248,81,73,0.07);
+    border: 1px solid rgba(248,81,73,0.25);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  #suspended_link {
+    background: transparent;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .suspended-list strong { color: var(--suspended); }
+  
+  .express-note {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    opacity: 0.8;
+  }
+  .embed-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .embed-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .embed-btn svg { width: 14px; height: 14px; }
+  .embed-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+  }
+  .embed-modal-overlay.active { display: flex; }
+  .embed-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 28px 22px;
+    max-width: 620px;
+    width: 90%;
+    position: relative;
+  }
+  .embed-modal h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
+  .embed-modal p {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-bottom: 14px;
+  }
+  .embed-modal textarea {
+    width: 100%;
+    height: 100px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  .embed-modal textarea:focus { outline: 1px solid var(--accent); }
+  .embed-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    justify-content: flex-end;
+  }
+  .embed-modal-actions button {
+    padding: 7px 18px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-copy {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-copy:hover { opacity: 0.85; }
+  .btn-close-modal {
+    background: transparent;
+    border: 1px solid var(--border) !important;
+    color: var(--text-muted);
+  }
+  .btn-close-modal:hover { border-color: var(--text) !important; color: var(--text); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>DC is supposed to be a global city.<br>It can take years to visit.</h1>
+  <p class="subtitle"></p>
+  <p>I recently visited Mexico City. If you're a US citizen and you want to visit Mexico City from DC, you don't have to plan ahead. Famously, you don't even have to speak Spanish. You land at Benito Juarez International Airport, and a tired but friendly Aduana agent talks to you for 15 seconds before punching a green stamp into your passport, allowing you to visit for 30 days. You proceed to the city's expansive Metro system (or subject yourself to LA-grade car traffic).</p>
+  <br>
+  <p>If you're a Mexican citizen and you want to visit the US, you first have to fill out a DS-160 form. The State Department says this should take roughly 90 minutes. Questions include things like "Have you ever been 10-printed?" and "Have you ever served in, been a member of, or been involved with a paramilitary unit, vigilante unit, rebel group, guerrilla group, or insurgent organizations?" (If yes, please explain). You must answer the questions in English. It's unclear if the 90-minute estimate includes the time it takes to learn English. Then you have to schedule an in-person interview with a consular officer. The wait time for an appointment is six months. That officer will ask you questions about your personal finances, your family ties to Mexico, and your job. Assuming you "pass" the interview (whether you pass is largely up to this consular officer) you'll have to pay $185 for the privilege of visiting the US.</p>
+<br>
+<p>This is to say, this system was unequal, even before the Trump administration made that Family Guy bit with the "skin color chart" our country's actual immigration policy. Something to think about during the next weekend escape to Cancun.</p>
+<br>  
+
+<div class="chart-section" id="chart1-wrap">
+    <div class="chart-title">Wait Time vs. Population</div>
+    <div class="chart-desc">Each dot is a country. The X-axis shows average wait (in days) for a B1/B2 tourist visa interview. The Y-axis shows country population (log scale). Some foreign citizens can visit the US by filling out a simple online form or by simply showing their passport. These countries are shown at the left of the chart, highlighted in green. Citizens of many other countries, including the three billion residents of China and India, must fill out the DS-160, wait months for that in-person interview at a US embassy, and shell out some cash to Uncle Sam.</div>
+    <div class="legend" id="legend1"></div>
+    <div id="chart1"></div>
+    <div class="express-note" id="express-note1"></div>
+    <div class="suspended-list" id="suspended1"></div>
+    <button class="embed-btn" onclick="showEmbed('chart1-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
+  </div>
+
+  <div class="chart-section" id="chart2-wrap">
+    <div class="chart-title">Wait Time vs. Share of DMV Foreign-Born Population</div>
+    <div class="chart-desc">Y-axis shows each country of origin's share of the DC/MD/VA metro area's foreign-born population. For example, if 13% of all foreign-born DMV residents were born in El Salvador, that country appears at 13%. Countries with the largest local immigrant communities often face among the longest waits.</div>
+    <div class="legend" id="legend2"></div>
+    <div id="chart2"></div>
+    <div class="express-note" id="express-note2"></div>
+    <div class="suspended-list" id="suspended2"></div>
+    <button class="embed-btn" onclick="showEmbed('chart2-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
+  </div>
+
+  <div class="chart-section" id="chart3-wrap">
+    <div class="chart-title">Wait Time vs. Latitude</div>
+    <div class="chart-desc">Y-axis shows the country's latitude. Citizens of equatorial countries tend to face longer waits.</div>
+    <div class="legend" id="legend3"></div>
+    <div id="chart3"></div>
+    <div class="express-note" id="express-note3"></div>
+    <div class="suspended-list" id="suspended3"></div>
+    <button class="embed-btn" onclick="showEmbed('chart3-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
+  </div>
+
+  <div class="chart-section" id="chart4-wrap">
+    <div class="chart-title">The Reciprocity Gap</div>
+    <div class="chart-desc">For each country: how much longer (in days) does it take their citizens to get a US visa, versus how long it takes Americans to visit them? Negative values means visiting the US takes longer. X marks indicate countries where the US has suspended visa services entirely.</div>
+    <div class="legend" id="legend4"></div>
+    <div id="chart4"></div>
+    <button class="embed-btn" onclick="showEmbed('chart4-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
+  </div>
+</div>
+
+<div class="tooltip" id="tip" style="display:none;"></div>
+
+<div class="embed-modal-overlay" id="embed-overlay" onclick="if(event.target===this)closeEmbed()">
+  <div class="embed-modal">
+    <h3>Embed this chart</h3>
+    <p>Copy the code below and paste it into your website's HTML. Replace <code>YOUR_URL</code> with the URL where you host this page.</p>
+    <textarea id="embed-code" readonly></textarea>
+    <div class="embed-modal-actions">
+      <button class="btn-close-modal" onclick="closeEmbed()">Close</button>
+      <button class="btn-copy" id="copy-btn" onclick="copyEmbed()">Copy code</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const chartHeights = {
+  'chart1-wrap': 720,
+  'chart2-wrap': 720,
+  'chart3-wrap': 720,
+  'chart4-wrap': 2900
+};
+const chartTitles = {
+  'chart1-wrap': 'Wait Time vs. Population',
+  'chart2-wrap': 'Wait Time vs. DMV Foreign-Born Share',
+  'chart3-wrap': 'Wait Time vs. Latitude',
+  'chart4-wrap': 'The Reciprocity Gap'
+};
+function showEmbed(chartId) {
+  const h = chartHeights[chartId] || 700;
+  const title = chartTitles[chartId] || 'Chart';
+  const code = `<!-- ${title} - US Visa Wait Times -->\n<iframe\n  src="YOUR_URL/visa_wait_times.html#${chartId}"\n  width="100%"\n  height="${h}"\n  frameborder="0"\n  style="border: none; max-width: 1100px;"\n  title="${title}"\n></iframe>`;
+  document.getElementById('embed-code').value = code;
+  document.getElementById('embed-overlay').classList.add('active');
+  document.getElementById('copy-btn').textContent = 'Copy code';
+}
+function closeEmbed() {
+  document.getElementById('embed-overlay').classList.remove('active');
+}
+function copyEmbed() {
+  const ta = document.getElementById('embed-code');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(() => {
+    document.getElementById('copy-btn').textContent = 'Copied!';
+    setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy code'; }, 2000);
+  });
+}
+
+// If loaded with a hash, isolate that chart
+if (window.location.hash) {
+  const targetId = window.location.hash.slice(1);
+  document.addEventListener('DOMContentLoaded', () => {
+    const target = document.getElementById(targetId);
+    if (target) {
+      // Hide everything except the target chart
+      document.querySelectorAll('.chart-section').forEach(el => {
+        if (el.id !== targetId) el.style.display = 'none';
+      });
+      const h1 = document.querySelector('h1');
+      const sub = document.querySelector('.subtitle');
+      if (h1) h1.style.display = 'none';
+      if (sub) sub.style.display = 'none';
+      // Hide embed buttons in isolated mode
+      target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
+      document.body.style.padding = '12px';
+    }
+  });
+}
+
+// ---- Main chart code ----
+const CSV_URL = "data:text/csv;base64,";
+
+const regionColors = {
+  "Americas": "#bc8cff",
+  "Europe": "#58a6ff",
+  "Asia": "#d2a8ff",
+  "Africa": "#ffa657",
+  "Middle East": "#79c0ff",
+  "Oceania": "#56d364",
+  "#N/A": "#8b949e"
+};
+
+const tip = d3.select("#tip");
+function showTip(evt, html) {
+  tip.style("display","block").html(html);
+  const tw = tip.node().offsetWidth, th = tip.node().offsetHeight;
+  let x = evt.pageX + 14, y = evt.pageY - 10;
+  if (x + tw > window.innerWidth - 20) x = evt.pageX - tw - 14;
+  if (y + th > window.innerHeight + window.scrollY - 10) y = evt.pageY - th - 10;
+  tip.style("left", x+"px").style("top", y+"px");
+}
+function hideTip() { tip.style("display","none"); }
+
+function buildLegend(sel) {
+  const items = Object.entries(regionColors).filter(d=>d[0]!=='#N/A');
+  const container = d3.select(sel);
+  items.forEach(([name, color]) => {
+    const it = container.append("span").attr("class","legend-item");
+    it.append("span").attr("class","legend-swatch").style("background", color);
+    it.append("span").text(name);
+  });
+}
+
+function suspendedNote(sel, list) {
+  d3.select(sel).html(
+    `<strong>Visa services suspended:</strong> In January 2026, the Trump administration <a id='suspended_link' href="https://web.archive.org/web/20260131004225/https://travel.state.gov/content/travel/en/News/visas-news/suspension-of-visa-issuance-to-foreign-nationals-to-protect-the-security-of-the-united-states.html">suspended</a> routine visa processing for citizens of the following countries: ${list.join(", ")}.`
+  );
+}
+
+const raw = d3.csvParse(`Country,VWP_country,no_barrier_country,services_suspended,mean_wait,country_abbrv,DMV_pct_pop,days_to_get_visa_for_US_citizen,region,wait_time_difference,population2026,latitude
+El Salvador,0,0,0,14,SV,0.1290010783,0,Americas,-14,6391253.00,13.794185
+India,0,0,0,289.8,IN,0.06800113355,10,Asia,-279.8,1476625576.00,20.593684
+Guatemala,0,0,0,352,GT,0.05030708103,0,Americas,-352,18967978.00,15.783471
+Ethiopia,0,0,0,151,ET,0.04383503816,3,Africa,-148,138902185.00,9.145
+South Korea,1,0,0,14,KR,0.03700258811,0,Asia,-14,51600388.00,35.907757
+China,0,0,0,45.2,CN,0.03684678403,42,Asia,-3.2,1412914089.00,35.86166
+Honduras,0,0,0,421,HN,0.03186693273,0,Americas,-421,11184760.00,15.199999
+Philippines,0,0,0,3,PH,0.03169819397,0,Asia,-3,117724471.00,12.879721
+Vietnam,0,0,0,12.5,VN,0.03023833909,7,Asia,-5.5,102177431.00,14.058324
+Peru,0,0,0,261,PE,0.02515148273,0,Americas,-261,34922148.00,-9.189967
+Mexico,0,0,0,265.5454545,MX,0.02286322048,0,Americas,-265.5454545,132997658.00,23.634501
+Nigeria,0,0,1,285,NG,0.02161561192,14,Africa,-271,242431832.00,9.081999
+Bolivia,0,0,0,9,BO,0.01912039481,0,Americas,-9,12749291.00,-16.290154
+Germany,1,0,0,31,DE,0.01877821377,0,Europe,-31,83644258.00,51.165691
+Pakistan,0,0,0,161,PK,0.01789747974,14,Asia,-147,259299791.00,30.375321
+Colombia,0,0,0,541,CO,0.0174994444,0,Americas,-541,53936226.00,4.570868
+Ghana,0,0,0,211,GH,0.01696853463,30,Africa,-181,35697557.00,7.946527
+Afghanistan,0,0,1,,AF,0.01678921295,28,Asia,,45047069.00,33.93911
+Jamaica,0,0,0,2,JM,0.01563097127,0,Americas,-2,2833403.00,18.109581
+Bangladesh,0,0,0,358,BD,0.01422050335,14,Asia,-344,177818044.00,23.684994
+Cameroon,0,0,0,69,CM,0.01158947211,14,Africa,-55,30640817.00,7.369722
+Japan,1,0,0,21,JP,0.01001438101,0,Asia,-21,122427731.00,36.204824
+Nepal,0,0,0,279,NP,0.009807426152,0,Asia,-279,29629410.00,28.394857
+Venezuela,0,0,1,,VE,0.009694541683,35,Americas,,28633711.00,6.42375
+United Kingdom,1,0,0,85.5,GB,0.0095299185,3,Europe,-82.5,69931528.00,55.378051
+Brazil,0,0,0,12.2,BR,0.008682697045,15,Americas,2.8,213562666.00,-14.235004
+Taiwan,1,0,0,52,TW,0.008459279868,14,Asia,-38,23011292.00,23.69781
+Dominican Republic,0,0,0,157,DO,0.008084174185,0,Americas,-157,11609500.00,18.735693
+Egypt,0,0,0,51,EG,0.008021264612,7,Africa,-44,120101175.00,26.820553
+Canada,0,1,0,171.6666667,CA,0.007979520876,0,Americas,-171.6666667,40467728.00,56.130366
+Sierra Leone,0,0,1,154,SL,0.007890154005,5,Africa,-149,8996745.00,8.460555
+Nicaragua,0,0,0,1,NI,0.007321616082,0,Americas,-1,7097329.00,12.865416
+Turkey,0,0,0,172.5,TR,0.007024706412,0,Middle East,-172.5,87926082.00,38.963745
+Ukraine,0,0,0,,UA,0.006971791818,0,Europe,,39535849.00,48.379433
+Russia,0,0,0,,RU,0.006515550423,28,Europe,,143394458.00,61.52401
+Argentina,0,0,0,77,AR,0.006370917198,0,Americas,-77,46003734.00,-38.416097
+Spain,1,0,0,45,ES,0.00565657017,0,Europe,-45,47850793.00,40.463667
+Trinidad and Tobago,0,0,0,2,TT,0.005630700813,0,Americas,-2,1513268.00,10.691803
+France,1,0,0,139,FR,0.005329087623,0,Europe,-139,66746401.00,46.227638
+Haiti,0,0,1,,HT,0.005207384055,0,Americas,,12037506.00,18.971187
+Ecuador,0,0,0,313,EC,0.005126836283,0,Americas,-313,18444506.00,-1.831239
+Morocco,0,0,0,160,MA,0.004676474289,0,Africa,-160,38762441.00,31.791702
+Thailand,0,0,0,10,TH,0.004533016943,0,Asia,-10,71559614.00,15.870032
+Italy,1,0,0,30.5,IT,0.004210237916,0,Europe,-30.5,58926166.00,41.87194
+Kenya,0,0,0,14,KE,0.003961539321,7,Africa,-7,58636412.00,-0.023559
+Togo,0,0,1,75,TG,0.003949192582,5,Africa,-70,9930918.00,8.619543
+Guyana,0,0,0,16,GY,0.003750468882,0,Americas,-16,840890.00,4.860416
+Liberia,0,0,0,7,LR,0.003634056774,14,Africa,7,5853949.00,6.428055
+South Africa,0,0,0,26.33333333,ZA,0.003296579248,0,Africa,-26.33333333,65453084.00,-30.559482
+Sri Lanka,0,0,0,30,LK,0.003153121902,3,Asia,-27,23348315.00,7.873054
+Panama,0,0,0,28,PA,0.003103147007,0,Americas,-28,4625718.00,8.537981
+Lebanon,0,0,0,157,LB,0.003097855548,0,Middle East,-157,5897467.00,33.854721
+Eritrea,0,0,1,60,ER,0.00297262434,,Africa,-60,3682669.00,15.179384
+Chile,1,0,0,64,CL,0.00287561425,0,Americas,-64,19945850.00,-35.675147
+Israel,1,0,0,91,IL,0.002798594118,3,Middle East,-88,9647689.00,31.046051
+Zambia,0,0,1,31,ZM,0.002762141842,0,Africa,-31,22521915.00,-13.133897
+Cote D’Ivoire,0,0,1,176,CI,0.002446418093,15,Africa,-161,33494346.00,7.539989
+Sudan,0,0,1,,SD,0.002339413024,56,Africa,,53282719.00,12.862807
+Senegal,0,0,1,15,SN,0.002265332592,0,Africa,-15,19366548.00,14.497401
+Mongolia,0,0,0,69,MN,0.002203598898,0,Asia,-69,3556798.00,46.862496
+Saudi Arabia,0,0,0,17.33333333,SA,0.002114232027,1,Middle East,-16.33333333,35165787.00,23.885942
+Indonesia,0,0,0,12,ID,0.002092478249,0,Asia,-12,287886782.00,-0.789275
+Poland,1,0,0,8,PL,0.002077191811,0,Europe,-8,37843188.00,51.919438
+Cuba,0,0,1,,CU,0.00198958876,7,Americas,,10892659.00,21.521757
+Australia,1,0,0,194.6666667,AU,0.001970774681,5,Oceania,-189.6666667,27227096.00,-25.274398
+Bulgaria,0,0,0,44,BG,0.001951960603,0,Europe,-44,6667659.00,42.733883
+Jordan,0,0,0,36,JO,0.001936674165,0,Middle East,-36,11589532.00,30.585164
+Guinea,0,0,0,42,GN,0.001936086225,3,Africa,-39,15441993.00,9.945587
+Myanmar,0,0,1,316,MM,0.001864945492,5,Asia,-311,55184819.00,21.913965
+Netherlands,1,0,0,200,NL,0.001847895234,0,Europe,-200,18448775.00,52.132633
+Tanzania,0,0,1,4,TZ,0.001822025876,15,Africa,11,72563780.00,-6.369028
+Kazakhstan,0,0,0,18.5,KZ,0.001777930381,0,Asia,-18.5,21083626.00,48.019573
+Cambodia,0,0,0,34,KH,0.001766171582,3,Asia,-31,18051219.00,12.565679
+Romania,0,0,0,10,RO,0.001726779606,0,Europe,-10,18800605.00,45.943161
+Syria,0,0,1,,SY,0.001682096171,30,Middle East,,26472497.00,34.802075
+Ireland,1,0,0,13,IE,0.001677392651,0,Europe,-13,5356950.00,53.41291
+Sweden,1,0,0,14,SE,0.001639764495,0,Europe,-14,10701047.00,60.128161
+Iraq,0,0,0,84.5,IQ,0.001613307197,30,Middle East,-54.5,48007437.00,33.223191
+Belgium,1,0,0,29,BE,0.001610955438,0,Europe,-29,11774642.00,50.503887
+Gambia,0,0,1,48,GM,0.001582734321,,Africa,-48,2884079.00,13.443182
+Portugal,1,0,0,62,PT,0.001558628783,0,Europe,-62,10395362.00,39.399872
+Uganda,0,0,0,264,UG,0.001544518224,14,Africa,-250,52761469.00,1.373333
+Greece,1,0,0,18,GR,0.001516885047,0,Europe,-18,9897115.00,39.074208
+Uzbekistan,0,0,0,10,UZ,0.001405176458,0,Asia,-10,37724223.00,41.377491
+Kuwait,0,0,0,1,KW,0.00139282972,0,Middle East,-1,5102773.00,29.31166
+Costa Rica,0,0,0,303,CR,0.001369900062,0,Americas,-303,5174789.00,9.748917
+Laos,0,0,1,7,LA,0.001245844734,0,Asia,-7,7974017.00,19.85627
+Uruguay,0,0,0,73,UY,0.001238789455,0,Americas,-73,3382537.00,-32.522779
+Singapore,1,0,0,2,SG,0.001178231641,0,Asia,-2,5905748.00,1.352083
+Malaysia,0,0,0,7,MY,0.001067698932,0,Asia,-7,36385115.00,4.210484
+Denmark,1,0,0,14,DK,0.001021251677,0,Europe,-14,6023520.00,56.26392
+Paraguay,0,0,0,7,PY,0.0009401159653,0,Americas,-7,7095279.00,-23.442503
+Algeria,0,0,0,158,DZ,0.0009118948481,21,Africa,-137,48028334.00,28.033886
+Barbados,0,0,0,36,BB,0.000883673731,,Americas,-36,282724.00,13.193887
+Albania,0,0,0,24,AL,0.000833698836,0,Europe,-24,2751025.00,41.153332
+Hungary,1,0,0,31,HU,0.0007931309801,0,Europe,-31,9585818.00,47.162494
+Armenia,0,0,0,49,AM,0.0007754927819,,Europe,-49,2930915.00,40.069099
+United Arab Emirates,0,0,0,465.5,AE,0.0007607942833,0,Middle East,-465.5,11574682.00,23.424076
+New Zealand,1,0,0,21,NZ,0.0007472716647,3,Oceania,-18,5287479.00,-40.900557
+Bosnia and Herzegovina,0,0,0,12,BA,0.0007219902473,,Europe,-12,3114242.00,43.915886
+Grenada,0,0,0,,GD,0.0007014123493,0,Americas,,117362.00,12.262776
+Austria,1,0,0,4,AT,0.0006726032922,0,Europe,-4,9107266.00,47.516231
+Zimbabwe,0,0,1,83,ZW,0.0006161610579,0,Africa,-83,17273580.00,-19.015438
+Switzerland,1,0,0,24,CH,0.0006038143192,0,Europe,-24,9007798.00,46.818188
+Azerbaijan,0,0,0,13,AZ,0.0005173871479,5,Asia,-8,10454855.00,40.143105
+Georgia,0,0,0,10,GE,0.0004897539707,0,Europe,-10,3804642.00,42.315407
+Yemen,0,0,1,,YE,0.0004756434121,28,Middle East,,42961653.00,15.552727
+North Macedonia,0,0,0,7,MK,0.000466824313,0,Europe,-7,1804063.00,41.608635
+Czech Republic,1,0,0,21,CZ,0.0004621207934,0,Europe,-21,10527781.00,49.817492
+Iceland,1,0,0,20,IS,0.0004374273159,0,Europe,-20,402329.00,64.963051
+Serbia,0,0,0,4,RS,0.000436839376,0,Europe,-4,6641964.00,44.016521
+Latvia,1,0,0,2,LV,0.000416849418,0,Europe,-2,1835935.00,56.879635
+Belize,0,0,0,14,BZ,0.0003462966251,0,Americas,-14,428644.00,17.189877
+Lithuania,1,0,0,1,LT,0.0003398292858,0,Europe,-1,2797338.00,55.169438
+Rwanda,0,0,0,60,RW,0.0003292463668,7,Africa,-53,14889693.00,-1.940278
+Moldova,0,0,0,29,MD,0.0002833870514,20,Europe,-9,2961253.00,47.411631
+Finland,1,0,0,33,FI,0.0002722161926,0,Europe,-33,5621739.00,61.92411
+Bahamas,0,0,0,5,BS,0.0002298845168,0,Americas,-5,404628.00,25.03428
+Croatia,1,0,0,2,HR,0.0002151860183,0,Europe,-2,3822345.00,45.1
+Norway,1,0,0,11,NO,0.0001752061023,0,Europe,-11,5652989.00,60.472024
+Slovakia,1,0,0,18,SK,0.0001428694056,0,Europe,-18,5451342.00,48.669026
+Libya,0,0,1,,LY,0.0001352261864,49,Africa,,7539851.00,26.3351
+Federated States of Micronesia,0,0,0,7,FM,0.00004879901508,,Oceania,-7,114183.00,7.425554
+Fiji,0,0,0,21,FJ,0.0000446834355,,Oceania,-21,937282.00,-16.578193
+Angola,0,0,1,15,AO,,,Africa,-15,40215179.00,-11.202692
+Bahrain,0,0,0,14,BH,,0,Middle East,-14,1675572.00,25.930414
+Belarus,0,0,0,,BY,,5,Europe,,8937018.00,53.709807
+Benin,0,0,1,138,BJ,,2,Africa,-136,15170419.00,9.30769
+Bermuda,0,1,0,12,BM,,0,Americas,-12,64459.00,32.321384
+Botswana,0,0,0,30,BW,,0,Africa,-30,2603388.00,-22.328474
+Brunei,1,0,0,7,BN,,,Asia,-7,469775.00,4.535277
+Burkina Faso,0,0,1,70,BF,,14,Africa,-56,24601700.00,12.238333
+Burundi,0,0,1,7,BI,,15,Africa,8,14729157.00,-3.373056
+Cape Verde,0,0,0,1,CV,,,Africa,-1,,16.002082
+Central African Republic,0,0,0,,CF,,,Africa,,5698984.00,6.611111
+Chad,0,0,1,,TD,,,Africa,,21560380.00,15.454166
+Republic of the Congo,0,0,1,219,CG,,,Africa,-219,6637785.00,-0.228021
+Curacao,0,0,0,40,CW,,,#N/A,-40,185440.00,
+Cyprus,0,0,0,5,CY,,0,Europe,-5,1382334.00,35.126413
+Democratic Republic of the Congo,0,0,0,,CD,,,Africa,,116452162.00,-4.038333
+Djibouti,0,0,0,19,DJ,,,Africa,-19,1199459.00,11.825138
+Equatorial Guinea,0,0,1,90,GQ,,,Africa,-90,1984468.00,1.650801
+Estonia,1,0,0,10,EE,,0,Europe,-10,1331062.00,58.595272
+Eswatini,0,0,0,45,SZ,,,Africa,-45,1269859.00,-26.522503
+Gabon,0,0,1,,GA,,,Africa,,2647399.00,-0.803689
+Kosovo,0,0,0,19,XK,,,Europe,-19,,42.602636
+Kyrgyzstan,0,0,0,103,KG,,0,Asia,-103,7400465.00,41.20438
+Lesotho,0,0,0,,LS,,0,Africa,,2389336.00,-29.609988
+Luxembourg,1,0,0,19,LU,,,Europe,-19,687448.00,49.815273
+Madagascar,0,0,0,14,MG,,,Africa,-14,33522052.00,-18.766947
+Malawi,0,0,1,216,MW,,,Africa,-216,22785535.00,-13.254308
+Mali,0,0,1,160,ML,,,Africa,-160,25932275.00,17.570692
+Malta,1,0,0,30,MT,,0,Europe,-30,549011.00,35.937496
+Marshall Islands,0,0,0,34,MH,,,Oceania,-34,35075.00,7.131474
+Mauritania,0,0,1,7,MR,,,Africa,-7,5461319.00,21.00789
+Mauritius,0,0,0,17,MU,,0,Africa,-17,1265059.00,-20.348404
+Montenegro,0,0,0,8,ME,,0,Europe,-8,626233.00,42.708678
+Mozambique,0,0,0,,MZ,,0,Africa,,36639851.00,-18.665695
+Namibia,0,0,0,6,NA,,0,Africa,-6,3153246.00,-22.95764
+Niger,0,0,1,,NE,,,Africa,,28814878.00,17.607789
+Oman,0,0,0,77,OM,,15,Middle East,-62,5671458.00,21.512583
+Palau,0,0,0,30,PW,,,Oceania,-30,17614.00,7.51498
+Papua New Guinea,0,0,0,24,PG,,,Oceania,-24,10947848.00,-6.314993
+Qatar,1,0,0,26,QA,,0,Middle East,-26,3173559.00,25.354826
+Samoa,0,0,0,60,WS,,0,Oceania,-60,220528.00,-13.759029
+Slovenia,1,0,0,14,SI,,0,Europe,-14,2114573.00,46.151241
+South Sudan,0,0,1,,SS,,,Africa,,12436037.00,11
+Suriname,0,0,0,6,SR,,3,Americas,-3,645256.00,3.919305
+Tajikistan,0,0,0,72,TJ,,0,Asia,-72,10978599.00,38.861034
+Timor-Leste,0,0,0,,TL,,,Asia,,1436923.00,-8.874217
+Tunisia,0,0,0,84,TN,,0,Africa,-84,12415138.00,33.886917
+Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
+{
+  // Parse
+  const data = raw.map(d => ({
+    country: d.Country,
+    abbr: d.country_abbrv,
+    vwp: +d.VWP_country === 1,
+    noBarrier: +d.no_barrier_country === 1,
+    suspended: +d.services_suspended === 1,
+    wait: d.mean_wait === "" ? null : +d.mean_wait,
+    dmv: d.DMV_pct_pop === "" ? null : +d.DMV_pct_pop,
+    visaDaysUS: d.days_to_get_visa_for_US_citizen === "" ? null : +d.days_to_get_visa_for_US_citizen,
+    region: d.region,
+    diff: d.wait_time_difference === "" ? null : +d.wait_time_difference,
+    pop: d.population2026 === "" ? null : +d.population2026.replace(/,/g,""),
+    lat: d.latitude === "" ? null : +d.latitude
+  }));
+
+  const suspendedCountries = ['Afghanistan',
+                              'Angola',
+                              'Antigua and Barbuda',
+                              'Benin',
+                              'Burkina Faso',
+                              'Myanmar',
+                              'Burundi',
+                              'Chad',
+                              'Cote D’Ivoire',
+                              'Cuba',
+                              'Dominica',
+                              'Equatorial Guinea',
+                              'Eritrea',
+                              'Gabon',
+                              'Haiti',
+                              'Iran',
+                              'Laos',
+                              'Libya',
+                              'Malawi',
+                              'Mali',
+                              'Mauritania',
+                              'Niger',
+                              'Nigeria',
+                              'Republic of the Congo',
+                              'Senegal',
+                              'Sierra Leone',
+                              'Somalia',
+                              'South Sudan',
+                              'Sudan',
+                              'Syria',
+                              'Tanzania',
+                              'Gambia',
+                              'Togo',
+                              'Tonga',
+                              'Turkmenistan',
+                              'Venezuela',
+                              'Yemen',
+                              'Zambia',
+                              'Zimbabwe']//data.filter(d=>d.suspended).map(d=>d.country).sort();
+  const expressCountries = data.filter(d=>d.vwp || d.noBarrier);
+
+  // Seeded random for express scatter
+  let seed = 42;
+  function seededRandom() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+
+  // ========== CHART 1: Wait vs log Population ==========
+  {
+    const W = 1040, H = 560, M = {t:30, r:30, b:50, l:70};
+    const pw = W - M.l - M.r, ph = H - M.t - M.b;
+    const svg = d3.select("#chart1").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
+    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
+
+    const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.pop != null);
+    const express = data.filter(d => (d.vwp || d.noBarrier) && d.pop != null);
+
+    const xMax = d3.max(normal, d=>d.wait);
+    const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
+    const y = d3.scaleLog().domain([d3.min(data.filter(d=>d.pop), d=>d.pop)*0.5, d3.max(data, d=>d.pop)*2]).range([ph, 0]);
+
+    // Grid
+    g.append("g").attr("class","grid").call(d3.axisLeft(y).tickValues([1e5, 1e6, 1e7, 1e8, 1e9]).tickSize(-pw).tickFormat(""));
+    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+    // Express box
+    const boxX = x(-38), boxW = x(-4) - boxX;
+    g.append("rect").attr("x",boxX).attr("y",0).attr("width",boxW).attr("height",ph)
+      .attr("fill","rgba(63,185,80,0.06)").attr("stroke","rgba(63,185,80,0.3)").attr("stroke-dasharray","4,3").attr("rx",6);
+    g.append("text").attr("x", boxX + boxW/2).attr("y", 16).attr("text-anchor","middle")
+      .attr("fill","#3fb950").attr("font-size","11px").attr("font-weight",500).text("Express Review");
+
+    // Axes
+    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d=> d < 0 ? "" : d+"d"));
+    g.append("g").attr("class","axis").call(d3.axisLeft(y).tickValues([1e5, 1e6, 1e7, 1e8, 1e9]).tickFormat(d => {
+      const s = d3.format(".1s")(d);
+      return s.replace("G","B");
+    }));
+    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+42).attr("text-anchor","middle").text("Mean Wait Time (days)");
+    g.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-ph/2).attr("y",-55).attr("text-anchor","middle").text("Population (log scale)");
+
+    // Express dots
+    express.forEach(d => {
+      d._ex = x(-21 + (seededRandom()-0.5)*26);
+      d._ey = y(d.pop);
+    });
+    g.selectAll(".expr").data(express).join("circle")
+      .attr("cx", d=>d._ex).attr("cy", d=>d._ey).attr("r",4.5)
+      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.55).attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.8).attr("stroke-width",0.7)
+      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"Visa Waiver Program":"Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
+      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"Visa Waiver Program":"Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
+      .on("mouseout", hideTip);
+
+    // Normal dots
+    g.selectAll(".norm").data(normal).join("circle")
+      .attr("cx", d=>x(d.wait)).attr("cy", d=>y(d.pop)).attr("r",5)
+      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.65)
+      .attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.9).attr("stroke-width",0.7)
+      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
+      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
+      .on("mouseout", hideTip);
+
+    // Labels for outliers
+    const labelThreshold1 = normal.sort((a,b)=>b.wait-a.wait).slice(0,8);
+    g.selectAll(".lbl").data(labelThreshold1).join("text")
+      .attr("x", d=>x(d.wait)+7).attr("y", d=>y(d.pop)+3)
+      .attr("fill","var(--text-muted)").attr("font-size","9.5px").text(d=>d.abbr);
+
+    buildLegend("#legend1");
+    suspendedNote("#suspended1", suspendedCountries);
+    d3.select("#express-note1").text("Dots in the 'Express Review' box are Visa Waiver Program (VWP) and visa-free countries — their citizens can enter the US with little to no wait. They are colored by region like all other dots.");
+  }
+
+  // ========== CHART 2: Wait vs DMV % ==========
+  {
+    const W = 1040, H = 560, M = {t:30, r:30, b:50, l:80};
+    const pw = W - M.l - M.r, ph = H - M.t - M.b;
+    const svg = d3.select("#chart2").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
+    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
+
+    const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.dmv != null);
+    const express = data.filter(d => (d.vwp || d.noBarrier) && d.dmv != null);
+
+    const xMax = d3.max(normal, d=>d.wait);
+    const yMax = d3.max([...normal, ...express], d=>d.dmv);
+    const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
+    const y = d3.scaleLinear().domain([0, yMax * 1.1]).range([ph, 0]);
+
+    g.append("g").attr("class","grid").call(d3.axisLeft(y).ticks(6).tickSize(-pw).tickFormat(""));
+    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+    const boxX = x(-38), boxW = x(-4) - boxX;
+    g.append("rect").attr("x",boxX).attr("y",0).attr("width",boxW).attr("height",ph)
+      .attr("fill","rgba(63,185,80,0.06)").attr("stroke","rgba(63,185,80,0.3)").attr("stroke-dasharray","4,3").attr("rx",6);
+    g.append("text").attr("x", boxX + boxW/2).attr("y", 16).attr("text-anchor","middle")
+      .attr("fill","#3fb950").attr("font-size","11px").attr("font-weight",500).text("Express Review");
+
+    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d=> d<0?"":d+"d"));
+    g.append("g").attr("class","axis").call(d3.axisLeft(y).ticks(8).tickFormat(d=> (d*100).toFixed(1)+"%"));
+    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+42).attr("text-anchor","middle").text("Mean Wait Time (days)");
+    g.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-ph/2).attr("y",-65).attr("text-anchor","middle").text("Share of DMV Foreign-Born Population (%)");
+
+    express.forEach(d => { d._ex2 = x(-21 + (seededRandom()-0.5)*26); d._ey2 = y(d.dmv); });
+    g.selectAll(".expr").data(express).join("circle")
+      .attr("cx", d=>d._ex2).attr("cy", d=>d._ey2).attr("r",4.5)
+      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.55).attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.8).attr("stroke-width",0.7)
+      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%`))
+      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%`))
+      .on("mouseout", hideTip);
+
+    g.selectAll(".norm").data(normal).join("circle")
+      .attr("cx", d=>x(d.wait)).attr("cy", d=>y(d.dmv)).attr("r",5)
+      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.65)
+      .attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.9).attr("stroke-width",0.7)
+      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%<br>Region: ${d.region}`))
+      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%<br>Region: ${d.region}`))
+      .on("mouseout", hideTip);
+
+    const topDMV = [...normal].sort((a,b)=>b.dmv - a.dmv).slice(0,10);
+    g.selectAll(".lbl").data(topDMV).join("text")
+      .attr("x", d=>x(d.wait)+7).attr("y", d=>y(d.dmv)+3)
+      .attr("fill","var(--text-muted)").attr("font-size","9.5px").text(d=>d.abbr);
+
+    buildLegend("#legend2");
+    suspendedNote("#suspended2", suspendedCountries);
+    d3.select("#express-note2").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
+  }
+
+  // ========== CHART 3: Wait vs Latitude ==========
+  {
+    const W = 1040, H = 560, M = {t:30, r:30, b:50, l:60};
+    const pw = W - M.l - M.r, ph = H - M.t - M.b;
+    const svg = d3.select("#chart3").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
+    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
+
+    const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.lat != null);
+    const express = data.filter(d => (d.vwp || d.noBarrier) && d.lat != null);
+
+    const xMax = d3.max(normal, d=>d.wait);
+    const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
+    const y = d3.scaleLinear().domain([-50, 70]).range([ph, 0]);
+
+    g.append("g").attr("class","grid").call(d3.axisLeft(y).ticks(8).tickSize(-pw).tickFormat(""));
+    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+    // Equator line
+    g.append("line").attr("x1",0).attr("x2",pw).attr("y1",y(0)).attr("y2",y(0))
+      .attr("stroke","rgba(255,255,255,0.15)").attr("stroke-width",1.5);
+    g.append("text").attr("x",pw-4).attr("y",y(0)-5).attr("text-anchor","end")
+      .attr("fill","rgba(255,255,255,0.25)").attr("font-size","10px").text("Equator");
+
+    // Tropic of Cancer (23.5°N)
+    g.append("line").attr("x1",0).attr("x2",pw).attr("y1",y(23.5)).attr("y2",y(23.5))
+      .attr("stroke","rgba(255,180,80,0.2)").attr("stroke-width",1).attr("stroke-dasharray","6,4");
+    g.append("text").attr("x",pw-4).attr("y",y(23.5)-5).attr("text-anchor","end")
+      .attr("fill","rgba(255,180,80,0.35)").attr("font-size","10px").text("Tropic of Cancer (23.5°N)");
+
+    // Tropic of Capricorn (23.5°S)
+    g.append("line").attr("x1",0).attr("x2",pw).attr("y1",y(-23.5)).attr("y2",y(-23.5))
+      .attr("stroke","rgba(255,180,80,0.2)").attr("stroke-width",1).attr("stroke-dasharray","6,4");
+    g.append("text").attr("x",pw-4).attr("y",y(-23.5)-5).attr("text-anchor","end")
+      .attr("fill","rgba(255,180,80,0.35)").attr("font-size","10px").text("Tropic of Capricorn (23.5°S)");
+
+    const boxX = x(-38), boxW = x(-4) - boxX;
+    g.append("rect").attr("x",boxX).attr("y",0).attr("width",boxW).attr("height",ph)
+      .attr("fill","rgba(63,185,80,0.06)").attr("stroke","rgba(63,185,80,0.3)").attr("stroke-dasharray","4,3").attr("rx",6);
+    g.append("text").attr("x", boxX + boxW/2).attr("y", 16).attr("text-anchor","middle")
+      .attr("fill","#3fb950").attr("font-size","11px").attr("font-weight",500).text("Express Review");
+
+    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d=> d<0?"":d+"d"));
+    g.append("g").attr("class","axis").call(d3.axisLeft(y).ticks(8).tickFormat(d=> d+"°"));
+    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+42).attr("text-anchor","middle").text("Mean Wait Time (days)");
+    g.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-ph/2).attr("y",-42).attr("text-anchor","middle").text("Latitude (°N / °S)");
+
+    express.forEach(d => { d._ex3 = x(-21 + (seededRandom()-0.5)*26); d._ey3 = y(d.lat); });
+    g.selectAll(".expr").data(express).join("circle")
+      .attr("cx", d=>d._ex3).attr("cy", d=>d._ey3).attr("r",4.5)
+      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.55).attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.8).attr("stroke-width",0.7)
+      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
+      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
+      .on("mouseout", hideTip);
+
+    g.selectAll(".norm").data(normal).join("circle")
+      .attr("cx", d=>x(d.wait)).attr("cy", d=>y(d.lat)).attr("r",5)
+      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.65)
+      .attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.9).attr("stroke-width",0.7)
+      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
+      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
+      .on("mouseout", hideTip);
+
+    buildLegend("#legend3");
+    suspendedNote("#suspended3", suspendedCountries);
+    d3.select("#express-note3").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
+  }
+
+  // ========== CHART 4: Reciprocity Dot Plot ==========
+  {
+    // For each country, show wait_time_difference as a dot.
+    // VWP/noBarrier → foreign-to-US = 0, so diff = 0 - visaDaysUS = -visaDaysUS (or 0 if also 0)
+    // Actually the user wants: diff = (foreign wait for US visa) - (US citizen wait for that country's visa)
+    // For VWP/noBarrier: foreign wait = 0, so diff = 0 - visaDaysUS
+    // Suspended: shown at max wait with × markers
+
+    const processedAll = data.filter(d => d.region !== '#N/A').map(d => {
+      let foreignWait, diff;
+      if (d.vwp || d.noBarrier) {
+        foreignWait = 0;
+        diff = d.visaDaysUS != null ? -(d.visaDaysUS) : 0;
+      } else if (d.suspended) {
+        foreignWait = null;
+        diff = null; // will be placed at max
+      } else {
+        foreignWait = d.wait;
+        diff = d.diff;
+      }
+      return { ...d, foreignWait, computedDiff: diff };
+    });
+
+    const withDiff = processedAll.filter(d => d.computedDiff != null && !d.suspended);
+    const suspendedData = processedAll.filter(d => d.suspended);
+
+    // Max absolute diff for scale
+    const maxAbsDiff = d3.max(withDiff, d => Math.abs(d.computedDiff));
+    const maxVal = d3.max(withDiff.map(d=>Math.abs(d.computedDiff)).concat([maxAbsDiff]));
+
+    // Sort by diff
+    const allForPlot = [...withDiff].sort((a,b) => a.computedDiff - b.computedDiff);
+    // Add suspended at the end (will be shown at -maxVal position since US takes way longer for them)
+    const suspSorted = suspendedData.sort((a,b) => a.country.localeCompare(b.country));
+    const plotData = [...allForPlot, ...suspSorted];
+
+    const rowH = 16;
+    const W = 1040, M = {t:30, r:40, b:40, l:220};
+    const pw = W - M.l - M.r;
+    const H = M.t + M.b + plotData.length * rowH;
+    const ph = plotData.length * rowH;
+
+    const svg = d3.select("#chart4").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
+    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
+
+    const x = d3.scaleLinear().domain([-maxVal * 1.08, 20]).range([0, pw]);
+    const yBand = d3.scaleBand().domain(plotData.map(d=>d.country)).range([0, ph]).padding(0.15);
+
+    // Grid
+    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+    // Zero line
+    g.append("line").attr("x1",x(0)).attr("x2",x(0)).attr("y1",0).attr("y2",ph)
+      .attr("stroke","rgba(255,255,255,0.2)").attr("stroke-width",1.5);
+
+    // Axis
+    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`)
+      .call(d3.axisBottom(x).ticks(8).tickFormat(d => {
+        if (d === 0) return "0";
+        return d > 0 ? `+${d}d` : `${d}d`;
+      }));
+    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+34).attr("text-anchor","middle")
+      .text("← US visa takes longer | Other country takes longer →");
+
+    // Country labels
+    g.selectAll(".ctry-label").data(plotData).join("text")
+      .attr("x", -6).attr("y", d => yBand(d.country) + yBand.bandwidth()/2)
+      .attr("text-anchor","end").attr("dominant-baseline","central")
+      .attr("fill", d => d.suspended ? "#f85149" : regionColors[d.region]||"#8b949e")
+      .attr("font-size","9.5px")
+      .attr("font-weight", d => d.suspended ? 500 : 400)
+      .text(d => d.country);
+
+    // Dots for non-suspended
+    g.selectAll(".dot").data(withDiff.filter(d => plotData.includes(d))).join("circle")
+      .attr("cx", d => x(d.computedDiff))
+      .attr("cy", d => yBand(d.country) + yBand.bandwidth()/2)
+      .attr("r", 4)
+      .attr("fill", d => regionColors[d.region] || "#8b949e")
+      .attr("fill-opacity", 0.75)
+      .attr("stroke", d => regionColors[d.region] || "#8b949e")
+      .attr("stroke-opacity", 0.9)
+      .on("mouseover", (evt,d) => showTip(evt,
+        `<strong>${d.country}</strong><br>` +
+        `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
+        (d.vwp||d.noBarrier ? `Status: ${d.vwp?"VWP":"Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
+        `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
+      ))
+      .on("mousemove", (evt,d) => showTip(evt,
+        `<strong>${d.country}</strong><br>` +
+        `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
+        (d.vwp||d.noBarrier ? `Status: ${d.vwp?"VWP":"Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
+        `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
+      ))
+      .on("mouseout", hideTip);
+
+    // X marks for suspended at -maxVal
+    const crossSize = 4;
+    suspSorted.forEach(d => {
+      const cx = x(-maxVal * 1.02);
+      const cy = yBand(d.country) + yBand.bandwidth()/2;
+      g.append("line").attr("x1",cx-crossSize).attr("y1",cy-crossSize).attr("x2",cx+crossSize).attr("y2",cy+crossSize)
+        .attr("stroke","#f85149").attr("stroke-width",2);
+      g.append("line").attr("x1",cx+crossSize).attr("y1",cy-crossSize).attr("x2",cx-crossSize).attr("y2",cy+crossSize)
+        .attr("stroke","#f85149").attr("stroke-width",2);
+    });
+
+    // Legend for chart 4
+    const leg4 = d3.select("#legend4");
+    Object.entries(regionColors).filter(d=>d[0]!=='#N/A').forEach(([name, color]) => {
+      const it = leg4.append("span").attr("class","legend-item");
+      it.append("span").attr("class","legend-swatch").style("background", color);
+      it.append("span").text(name);
+    });
+    const susItem = leg4.append("span").attr("class","legend-item");
+    susItem.append("span").style("color","#f85149").style("font-weight","bold").style("font-size","14px").text("✕ ");
+    susItem.append("span").text("Services suspended (shown at max)");
+  }
+
+}
+</script>
+</body>
+</html>
