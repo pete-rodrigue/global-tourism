@@ -1,396 +1,544 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>US Visa Wait Times — A Global View</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0e1117;
-    --surface: #161b22;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-muted: #8b949e;
-    --accent: #58a6ff;
-    --express: #3fb950;
-    --suspended: #f85149;
-    --americas: #FF3EAD;
-    --europe: #2ED9FF;
-    --asia: #7BFF5A;
-    --africa: #FFB100;
-    --middleeast: #C060FF;
-    --oceania: #00D4A1;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    line-height: 1.6;
-    padding: 40px 20px 80px;
-  }
-  .container { max-width: 1100px; margin: 0 auto; }
-  h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2.6rem;
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-    background: linear-gradient(135deg, #e6edf3, #8b949e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .subtitle {
-    color: var(--text-muted);
-    font-size: 1.05rem;
-    margin-bottom: 48px;
-    max-width: 720px;
-  }
-  .chart-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 32px 28px 24px;
-    margin-bottom: 36px;
-  }
-  .chart-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.35rem;
-    margin-bottom: 4px;
-  }
-  .chart-desc {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin-bottom: 18px;
-  }
-  svg { display: block; }
-  .axis text { fill: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 11px; }
-  .axis line, .axis path { stroke: var(--border); }
-  .axis-label { fill: var(--text-muted); font-size: 12px; font-family: 'DM Sans', sans-serif; }
-  .grid line { stroke: var(--border); stroke-opacity: 0.4; stroke-dasharray: 2,3; }
-  .grid .domain { display: none; }
-  .tooltip {
-    position: absolute;
-    pointer-events: none;
-    background: #1c2128;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 12px;
-    color: var(--text);
-    z-index: 100;
-    line-height: 1.5;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    max-width: 260px;
-  }
-  .tooltip strong { color: #fff; }
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 14px;
-    font-size: 12px;
-  }
-  .legend-item { display: flex; align-items: center; gap: 5px; color: var(--text-muted); }
-  .legend-swatch {
-    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-  }
-  .suspended-list {
-    margin-top: 16px;
-    padding: 14px 18px;
-    background: rgba(248,81,73,0.07);
-    border: 1px solid rgba(248,81,73,0.25);
-    border-radius: 8px;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-  }
-  #suspended_link {
-    background: transparent;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    line-height: 1.7;
-  }
-  .suspended-list strong { color: var(--suspended); }
-  
-  .express-note {
-    margin-top: 10px;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    opacity: 0.8;
-  }
-  .embed-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 14px;
-    padding: 6px 14px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .embed-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .embed-btn svg { width: 14px; height: 14px; }
-  .embed-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    z-index: 200;
-    justify-content: center;
-    align-items: center;
-  }
-  .embed-modal-overlay.active { display: flex; }
-  .embed-modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px 28px 22px;
-    max-width: 620px;
-    width: 90%;
-    position: relative;
-  }
-  .embed-modal h3 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.15rem;
-    margin-bottom: 6px;
-  }
-  .embed-modal p {
-    color: var(--text-muted);
-    font-size: 0.82rem;
-    margin-bottom: 14px;
-  }
-  .embed-modal textarea {
-    width: 100%;
-    height: 100px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: 'Courier New', monospace;
-    font-size: 0.78rem;
-    padding: 12px;
-    resize: vertical;
-    line-height: 1.5;
-  }
-  .embed-modal textarea:focus { outline: 1px solid var(--accent); }
-  .embed-modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
-    justify-content: flex-end;
-  }
-  .embed-modal-actions button {
-    padding: 7px 18px;
-    border-radius: 6px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-  .btn-copy {
-    background: var(--accent);
-    color: #fff;
-  }
-  .btn-copy:hover { opacity: 0.85; }
-  .btn-close-modal {
-    background: transparent;
-    border: 1px solid var(--border) !important;
-    color: var(--text-muted);
-  }
-  .btn-close-modal:hover { border-color: var(--text) !important; color: var(--text); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>US Visa Wait Times — A Global View</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=DM+Serif+Display&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --express: #3fb950;
+      --suspended: #f85149;
+      --americas: #FF3EAD;
+      --europe: #2ED9FF;
+      --asia: #7BFF5A;
+      --africa: #FFB100;
+      --middleeast: #C060FF;
+      --oceania: #00D4A1;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px 80px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.6rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #e6edf3, #8b949e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-bottom: 48px;
+      max-width: 720px;
+    }
+
+    .chart-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 28px 24px;
+      margin-bottom: 36px;
+    }
+
+    .chart-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.35rem;
+      margin-bottom: 4px;
+    }
+
+    .chart-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 18px;
+    }
+
+    svg {
+      display: block;
+    }
+
+    .axis text {
+      fill: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+    }
+
+    .axis line,
+    .axis path {
+      stroke: var(--border);
+    }
+
+    .axis-label {
+      fill: var(--text-muted);
+      font-size: 12px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .grid line {
+      stroke: var(--border);
+      stroke-opacity: 0.4;
+      stroke-dasharray: 2, 3;
+    }
+
+    .grid .domain {
+      display: none;
+    }
+
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #1c2128;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: var(--text);
+      z-index: 100;
+      line-height: 1.5;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      max-width: 260px;
+    }
+
+    .tooltip strong {
+      color: #fff;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-muted);
+    }
+
+    .legend-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .suspended-list {
+      margin-top: 16px;
+      padding: 14px 18px;
+      background: rgba(248, 81, 73, 0.07);
+      border: 1px solid rgba(248, 81, 73, 0.25);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    #suspended_link {
+      background: transparent;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .suspended-list strong {
+      color: var(--suspended);
+    }
+
+    .express-note {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+
+    .embed-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .embed-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .embed-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .embed-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .embed-modal-overlay.active {
+      display: flex;
+    }
+
+    .embed-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 28px 22px;
+      max-width: 620px;
+      width: 90%;
+      position: relative;
+    }
+
+    .embed-modal h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.15rem;
+      margin-bottom: 6px;
+    }
+
+    .embed-modal p {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      margin-bottom: 14px;
+    }
+
+    .embed-modal textarea {
+      width: 100%;
+      height: 100px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .embed-modal textarea:focus {
+      outline: 1px solid var(--accent);
+    }
+
+    .embed-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      justify-content: flex-end;
+    }
+
+    .embed-modal-actions button {
+      padding: 7px 18px;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-copy {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-copy:hover {
+      opacity: 0.85;
+    }
+
+    .btn-close-modal {
+      background: transparent;
+      border: 1px solid var(--border) !important;
+      color: var(--text-muted);
+    }
+
+    .btn-close-modal:hover {
+      border-color: var(--text) !important;
+      color: var(--text);
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
-  <h1>DC is supposed to be a global city.<br>It can take years to visit.</h1>
-  <p class="subtitle"></p>
-
-  <div id="para_text">
-    <p>I recently visited Mexico City. If you're a US citizen and you want to visit Mexico City from DC, you don't have to plan ahead. Famously, you don't even have to speak Spanish. You land at Benito Juarez International Airport, and a tired but friendly Aduana agent talks to you for 15 seconds before punching a green stamp into your passport, allowing you to visit for 30 days. You proceed to the city's expansive Metro system (or subject yourself to LA-grade traffic on surface streets).</p>
-  <br>
-  <p>If you're a Mexican citizen and you want to visit the US, you first have to fill out a DS-160 form. The State Department says this should take roughly 90 minutes. Questions include things like "Have you ever been 10-printed?" and "Have you ever served in, been a member of, or been involved with a paramilitary unit, vigilante unit, rebel group, guerrilla group, or insurgent organizations?" (If yes, please explain). You must answer the questions in English. It's unclear if the 90-minute estimate includes the time it takes to learn English. Then you have to schedule an in-person interview with a consular officer. The wait time for an appointment is six months. That officer will ask you questions about your personal finances, your family ties to Mexico, and your job. Assuming you "pass" the interview (whether you pass is largely up to this consular officer) you'll have to pay $185 for the privilege of visiting the US.</p>
-<br>
-<p>In other words, our visa system was unequal, even before the Trump administration made that Family Guy bit with the "skin color chart" our country's explicit foreign policy. Something to think about during the next weekend escape to Cancun.</p>
-<br>  
-  </div>
-
-<div class="chart-section" id="chart1-wrap">
-    <div class="chart-title">Wait Time vs. Population</div>
-    <div class="chart-desc">Each dot is a country. The X-axis shows average wait (in days) for a B1/B2 tourist visa interview. The Y-axis shows country population (log scale). Some foreign citizens can visit the US by filling out a simple online form or by simply showing their passport. These countries are shown at the left of the chart, highlighted in green. Citizens of many other countries, including the three billion residents of China and India, must fill out the DS-160, wait months for that in-person interview at a US embassy, and shell out some cash to Uncle Sam.</div>
-    <div class="legend" id="legend1"></div>
-    <div id="chart1"></div>
-    <div class="express-note" id="express-note1"></div>
-    <div class="suspended-list" id="suspended1"></div>
-    <button class="embed-btn" onclick="showEmbed('chart1-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
-  </div>
+  <div class="container">
+    <h1>DC is supposed to be a global city.<br>It can take years to visit.</h1>
+    <p class="subtitle"></p>
 
     <div id="para_text">
-    <p>There are huge inequalities in visa wait times. American citizens rarely have to wait long to get a visa to visit another country. Those countries' citizens often have to wait weeks or months--sometimes years--to get a tourist visa to visit the U.S. This is a function of several factors, including the in-person-at-an-embassy interview process the U.S. requires, the limited number of U.S. diplomatic posts abroad, and the general interest in visiting the U.S. There are, for example, four U.S. missions in Australia, but there is only one in Bangladesh. Australia has a population of 27 million. Bangladesh has a population of 175 million.</p>
-    <br>
-    <p>The impacts of these wait times on individual people is brutal. My sister has a close friend I'll call Eduardo, who is a U.S. citizen. Eduardo's father, who I'll call Roberto, recently died well before his time from a tragic medical incident. Roberto was beloved by his friends and family. He spent his entire professional life helping people in need. Roberto was originally from Columbia and his brother still lives there. Roberto's brother tried to fly to the U.S. to attend his Roberto's funeral. The U.S. Department of State refused to issue him a visa. He could not attend the funeral.</p>
-<br>  
-  </div>
+      <p>I recently visited Mexico City. If you're a US citizen and you want to visit Mexico City from DC, you don't
+        have to plan ahead. Famously, you don't even have to speak Spanish. You land at Benito Juarez International
+        Airport, and a tired but friendly Aduana agent talks to you for 10 seconds before punching a green stamp into
+        your passport, allowing you to visit for 30 days. You proceed to the city's expansive Metro system (or subject
+        yourself to LA-grade traffic on surface streets).</p>
+      <br>
+      <p>If you're a Mexican citizen and you want to visit the US, you first have to fill out a DS-160 form. The State
+        Department says this should take roughly 90 minutes. Questions include things like "Have you ever been
+        10-printed?" and "Have you ever served in, been a member of, or been involved with a paramilitary unit,
+        vigilante unit, rebel group, guerrilla group, or insurgent organizations?" (If yes, please explain). You must
+        answer the questions in English. It's unclear if the 90-minute estimate includes the time it takes to learn
+        English. Then you have to schedule an in-person interview with a consular officer. The wait time for an
+        appointment is six months. That officer will ask you questions about your personal finances, your family ties to
+        Mexico, and your job. Assuming you "pass" the interview (whether you pass is largely up to this consular
+        officer) you'll have to pay $185 for the privilege of visiting the US.</p>
+      <br>
+      <p>In other words, our visa system was unequal, even before the Trump administration made that Family Guy bit with
+        the "skin color chart" our country's explicit foreign policy. Something to think about during the next weekend
+        escape to Cancun.</p>
+      <br>
+    </div>
 
-   <div class="chart-section" id="chart4-wrap">
-    <div class="chart-title">Wait times for thee and not for me</div>
-    <div class="chart-desc">For each country: how much longer (in days) does it take their citizens to get a US visa, versus how long it takes Americans to visit them? Negative values means visiting the US takes longer. X marks indicate countries where the US has suspended visa services entirely.</div>
-    <div class="legend" id="legend4"></div>
-    <div id="chart4"></div>
-    <button class="embed-btn" onclick="showEmbed('chart4-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
-  </div>
-
-  <div id="para_text">
-    <p>There are also significant wait time differences among nationalities that predominate in the DMV. Salvadoran citizens face less stiff wait times that Indian, Chinese, Honduran, Guatemalan, and Ethiopian citizens.</p>
-<br>  
-  </div>
-
-  <div class="chart-section" id="chart2-wrap">
-    <div class="chart-title">Wait Time vs. Share of DMV Foreign-Born Population</div>
-    <div class="chart-desc">Y-axis shows each country of origin's share of the DC/MD/VA metro area's foreign-born population. For example, if 13% of all foreign-born DMV residents were born in El Salvador, that country appears at 13%. Countries with the largest local immigrant communities often face among the longest waits.</div>
-    <div class="legend" id="legend2"></div>
-    <div id="chart2"></div>
-    <div class="express-note" id="express-note2"></div>
-    <div class="suspended-list" id="suspended2"></div>
-    <button class="embed-btn" onclick="showEmbed('chart2-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
-  </div>
+    <div class="chart-section" id="chart1-wrap">
+      <div class="chart-title">Wait Time vs. Population</div>
+      <div class="chart-desc">Each dot is a country. The X-axis shows average wait (in days) for a B1/B2 tourist visa
+        interview. The Y-axis shows country population (log scale). Some foreign citizens can visit the US by filling
+        out a simple online form or by simply showing their passport. These countries are shown at the left of the
+        chart, highlighted in green. Citizens of many other countries, including the three billion residents of China
+        and India, must fill out the DS-160, wait months for that in-person interview at a US embassy, and shell out
+        some cash to Uncle Sam.</div>
+      <div class="legend" id="legend1"></div>
+      <div id="chart1"></div>
+      <div class="express-note" id="express-note1"></div>
+      <div class="suspended-list" id="suspended1"></div>
+      <button class="embed-btn" onclick="showEmbed('chart1-wrap')"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg> Embed this chart</button>
+    </div>
 
     <div id="para_text">
-    <p>The U.S. government imposes the longest wait times on citizens of equatorial countries--when it issues them visas at all.</p>
-<br>  
+      <p>There are huge inequalities in visa wait times. American citizens rarely have to wait long to get a visa to
+        visit another country. Those countries' citizens often have to wait weeks or months--sometimes years--to get a
+        tourist visa to visit the U.S. This is a function of several factors, including the in-person-at-an-embassy
+        interview process the U.S. requires, the limited number of U.S. diplomatic posts abroad, and the general
+        interest in visiting the U.S. There are, for example, four U.S. missions in Australia, but there is only one in
+        Bangladesh. Australia has a population of 27 million. Bangladesh has a population of 175 million.</p>
+      <br>
+      <p>The impacts of these wait times on individual people is brutal. My sister has a close friend I'll call Eduardo,
+        who is a U.S. citizen. Eduardo's father, who I'll call Roberto, recently died well before his time from a tragic
+        medical incident. Roberto was beloved by his friends and family. He spent his entire professional life helping
+        people in need. Roberto was originally from Columbia and his brother still lives there. Roberto's brother tried
+        to fly to the U.S. to attend his Roberto's funeral. The U.S. Department of State refused to issue him a visa. He
+        could not attend the funeral.</p>
+      <br>
+    </div>
+
+    <div class="chart-section" id="chart4-wrap">
+      <div class="chart-title">Wait times for thee and not for me</div>
+      <div class="chart-desc">For each country: how much longer (in days) does it take their citizens to get a US visa,
+        versus how long it takes Americans to visit them? Negative values means visiting the US takes longer. X marks
+        indicate countries where the US has suspended visa services entirely.</div>
+      <div class="legend" id="legend4"></div>
+      <div id="chart4"></div>
+      <button class="embed-btn" onclick="showEmbed('chart4-wrap')"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg> Embed this chart</button>
+    </div>
+
+    <div id="para_text">
+      <p>There are also significant wait time differences among nationalities that predominate in the DMV. Salvadoran
+        citizens face less stiff wait times that Indian, Chinese, Honduran, Guatemalan, and Ethiopian citizens.</p>
+      <br>
+    </div>
+
+    <div class="chart-section" id="chart2-wrap">
+      <div class="chart-title">Wait Time vs. Share of DMV Foreign-Born Population</div>
+      <div class="chart-desc">Y-axis shows each country of origin's share of the DC/MD/VA metro area's foreign-born
+        population. For example, if 13% of all foreign-born DMV residents were born in El Salvador, that country appears
+        at 13%. Countries with the largest local immigrant communities often face among the longest waits.</div>
+      <div class="legend" id="legend2"></div>
+      <div id="chart2"></div>
+      <div class="express-note" id="express-note2"></div>
+      <div class="suspended-list" id="suspended2"></div>
+      <button class="embed-btn" onclick="showEmbed('chart2-wrap')"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg> Embed this chart</button>
+    </div>
+
+    <div id="para_text">
+      <p>The U.S. government imposes the longest wait times on citizens of equatorial countries--when it issues them
+        visas at all.</p>
+      <br>
+    </div>
+
+    <div class="chart-section" id="chart3-wrap">
+      <div class="chart-title">Wait Time vs. Latitude</div>
+      <div class="chart-desc">Y-axis shows the country's latitude. Citizens of equatorial countries tend to face longer
+        waits.</div>
+      <div class="legend" id="legend3"></div>
+      <div id="chart3"></div>
+      <div class="express-note" id="express-note3"></div>
+      <div class="suspended-list" id="suspended3"></div>
+      <button class="embed-btn" onclick="showEmbed('chart3-wrap')"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg> Embed this chart</button>
+    </div>
+
+
   </div>
 
-  <div class="chart-section" id="chart3-wrap">
-    <div class="chart-title">Wait Time vs. Latitude</div>
-    <div class="chart-desc">Y-axis shows the country's latitude. Citizens of equatorial countries tend to face longer waits.</div>
-    <div class="legend" id="legend3"></div>
-    <div id="chart3"></div>
-    <div class="express-note" id="express-note3"></div>
-    <div class="suspended-list" id="suspended3"></div>
-    <button class="embed-btn" onclick="showEmbed('chart3-wrap')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Embed this chart</button>
-  </div>
+  <div class="tooltip" id="tip" style="display:none;"></div>
 
- 
-</div>
-
-<div class="tooltip" id="tip" style="display:none;"></div>
-
-<div class="embed-modal-overlay" id="embed-overlay" onclick="if(event.target===this)closeEmbed()">
-  <div class="embed-modal">
-    <h3>Embed this chart</h3>
-    <p>Copy the code below and paste it into your website's HTML. Replace <code>YOUR_URL</code> with the URL where you host this page.</p>
-    <textarea id="embed-code" readonly></textarea>
-    <div class="embed-modal-actions">
-      <button class="btn-close-modal" onclick="closeEmbed()">Close</button>
-      <button class="btn-copy" id="copy-btn" onclick="copyEmbed()">Copy code</button>
+  <div class="embed-modal-overlay" id="embed-overlay" onclick="if(event.target===this)closeEmbed()">
+    <div class="embed-modal">
+      <h3>Embed this chart</h3>
+      <p>Copy the code below and paste it into your website's HTML. Replace <code>YOUR_URL</code> with the URL where you
+        host this page.</p>
+      <textarea id="embed-code" readonly></textarea>
+      <div class="embed-modal-actions">
+        <button class="btn-close-modal" onclick="closeEmbed()">Close</button>
+        <button class="btn-copy" id="copy-btn" onclick="copyEmbed()">Copy code</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script>
-const chartHeights = {
-  'chart1-wrap': 720,
-  'chart2-wrap': 720,
-  'chart3-wrap': 720,
-  'chart4-wrap': 2900
-};
-const chartTitles = {
-  'chart1-wrap': 'Wait Time vs. Population',
-  'chart2-wrap': 'Wait Time vs. DMV Foreign-Born Share',
-  'chart3-wrap': 'Wait Time vs. Latitude',
-  'chart4-wrap': 'The Reciprocity Gap'
-};
-function showEmbed(chartId) {
-  const h = chartHeights[chartId] || 700;
-  const title = chartTitles[chartId] || 'Chart';
-  const code = `<!-- ${title} - US Visa Wait Times -->\n<iframe\n  src="YOUR_URL/visa_wait_times.html#${chartId}"\n  width="100%"\n  height="${h}"\n  frameborder="0"\n  style="border: none; max-width: 1100px;"\n  title="${title}"\n></iframe>`;
-  document.getElementById('embed-code').value = code;
-  document.getElementById('embed-overlay').classList.add('active');
-  document.getElementById('copy-btn').textContent = 'Copy code';
-}
-function closeEmbed() {
-  document.getElementById('embed-overlay').classList.remove('active');
-}
-function copyEmbed() {
-  const ta = document.getElementById('embed-code');
-  ta.select();
-  navigator.clipboard.writeText(ta.value).then(() => {
-    document.getElementById('copy-btn').textContent = 'Copied!';
-    setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy code'; }, 2000);
-  });
-}
-
-// If loaded with a hash, isolate that chart
-if (window.location.hash) {
-  const targetId = window.location.hash.slice(1);
-  document.addEventListener('DOMContentLoaded', () => {
-    const target = document.getElementById(targetId);
-    if (target) {
-      // Hide everything except the target chart
-      document.querySelectorAll('.chart-section').forEach(el => {
-        if (el.id !== targetId) el.style.display = 'none';
-      });
-      const h1 = document.querySelector('h1');
-      const sub = document.querySelector('.subtitle');
-      const txt = document.querySelector('#para_text');
-      if (h1) h1.style.display = 'none';
-      if (sub) sub.style.display = 'none';
-      if (txt) txt.style.display = 'none';
-      // Hide embed buttons in isolated mode
-      target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
-      document.body.style.padding = '12px';
+  <script>
+    const chartHeights = {
+      'chart1-wrap': 720,
+      'chart2-wrap': 720,
+      'chart3-wrap': 720,
+      'chart4-wrap': 2900
+    };
+    const chartTitles = {
+      'chart1-wrap': 'Wait Time vs. Population',
+      'chart2-wrap': 'Wait Time vs. DMV Foreign-Born Share',
+      'chart3-wrap': 'Wait Time vs. Latitude',
+      'chart4-wrap': 'The Reciprocity Gap'
+    };
+    function showEmbed(chartId) {
+      const h = chartHeights[chartId] || 700;
+      const title = chartTitles[chartId] || 'Chart';
+      const code = `<!-- ${title} - US Visa Wait Times -->\n<iframe\n  src="YOUR_URL/visa_wait_times.html#${chartId}"\n  width="100%"\n  height="${h}"\n  frameborder="0"\n  style="border: none; max-width: 1100px;"\n  title="${title}"\n></iframe>`;
+      document.getElementById('embed-code').value = code;
+      document.getElementById('embed-overlay').classList.add('active');
+      document.getElementById('copy-btn').textContent = 'Copy code';
     }
-  });
-}
+    function closeEmbed() {
+      document.getElementById('embed-overlay').classList.remove('active');
+    }
+    function copyEmbed() {
+      const ta = document.getElementById('embed-code');
+      ta.select();
+      navigator.clipboard.writeText(ta.value).then(() => {
+        document.getElementById('copy-btn').textContent = 'Copied!';
+        setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy code'; }, 2000);
+      });
+    }
 
-// ---- Main chart code ----
-const CSV_URL = "data:text/csv;base64,";
+    // If loaded with a hash, isolate that chart
+    if (window.location.hash) {
+      const targetId = window.location.hash.slice(1);
+      document.addEventListener('DOMContentLoaded', () => {
+        const target = document.getElementById(targetId);
+        if (target) {
+          // Hide everything except the target chart
+          document.querySelectorAll('.chart-section').forEach(el => {
+            if (el.id !== targetId) el.style.display = 'none';
+          });
+          const h1 = document.querySelector('h1');
+          const sub = document.querySelector('.subtitle');
+          const txt = document.querySelector('#para_text');
+          if (h1) h1.style.display = 'none';
+          if (sub) sub.style.display = 'none';
+          if (txt) txt.style.display = 'none';
+          // Hide embed buttons in isolated mode
+          target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
+          document.body.style.padding = '12px';
+        }
+      });
+    }
 
-const regionColors = {
-  "Americas": "#FF3EAD",
-  "Europe": "#2ED9FF",
-  "Asia": "#7BFF5A",
-  "Africa": "#FFB100",
-  "Middle East": "#BE6E46",
-  "Oceania": "#C060FF",
-  "#N/A": "#00D4A1"
-};
+    // ---- Main chart code ----
+    const CSV_URL = "data:text/csv;base64,";
 
-const tip = d3.select("#tip");
-function showTip(evt, html) {
-  tip.style("display","block").html(html);
-  const tw = tip.node().offsetWidth, th = tip.node().offsetHeight;
-  let x = evt.pageX + 14, y = evt.pageY - 10;
-  if (x + tw > window.innerWidth - 20) x = evt.pageX - tw - 14;
-  if (y + th > window.innerHeight + window.scrollY - 10) y = evt.pageY - th - 10;
-  tip.style("left", x+"px").style("top", y+"px");
-}
-function hideTip() { tip.style("display","none"); }
+    const regionColors = {
+      "Americas": "#FF3EAD",
+      "Europe": "#2ED9FF",
+      "Asia": "#7BFF5A",
+      "Africa": "#FFB100",
+      "Middle East": "#BE6E46",
+      "Oceania": "#C060FF",
+      "#N/A": "#00D4A1"
+    };
 
-function buildLegend(sel) {
-  const items = Object.entries(regionColors).filter(d=>d[0]!=='#N/A');
-  const container = d3.select(sel);
-  items.forEach(([name, color]) => {
-    const it = container.append("span").attr("class","legend-item");
-    it.append("span").attr("class","legend-swatch").style("background", color);
-    it.append("span").text(name);
-  });
-}
+    const tip = d3.select("#tip");
+    function showTip(evt, html) {
+      tip.style("display", "block").html(html);
+      const tw = tip.node().offsetWidth, th = tip.node().offsetHeight;
+      let x = evt.pageX + 14, y = evt.pageY - 10;
+      if (x + tw > window.innerWidth - 20) x = evt.pageX - tw - 14;
+      if (y + th > window.innerHeight + window.scrollY - 10) y = evt.pageY - th - 10;
+      tip.style("left", x + "px").style("top", y + "px");
+    }
+    function hideTip() { tip.style("display", "none"); }
 
-function suspendedNote(sel, list) {
-  d3.select(sel).html(
-    `<strong>Visa services suspended:</strong> In January 2026, the Trump administration just <a id='suspended_link' href="https://web.archive.org/web/20260131004225/https://travel.state.gov/content/travel/en/News/visas-news/suspension-of-visa-issuance-to-foreign-nationals-to-protect-the-security-of-the-united-states.html">stopped doing</a> routine visa processing for citizens of many countries: ${list.join(", ")}.`
-  );
-}
+    function buildLegend(sel) {
+      const items = Object.entries(regionColors).filter(d => d[0] !== '#N/A');
+      const container = d3.select(sel);
+      items.forEach(([name, color]) => {
+        const it = container.append("span").attr("class", "legend-item");
+        it.append("span").attr("class", "legend-swatch").style("background", color);
+        it.append("span").text(name);
+      });
+    }
 
-const raw = d3.csvParse(`Country,VWP_country,no_barrier_country,services_suspended,mean_wait,country_abbrv,DMV_pct_pop,days_to_get_visa_for_US_citizen,region,wait_time_difference,population2026,latitude
+    function suspendedNote(sel, list) {
+      d3.select(sel).html(
+        `<strong>Visa services suspended:</strong> In January 2026, the Trump administration just <a id='suspended_link' href="https://web.archive.org/web/20260131004225/https://travel.state.gov/content/travel/en/News/visas-news/suspension-of-visa-issuance-to-foreign-nationals-to-protect-the-security-of-the-united-states.html">stopped doing</a> routine visa processing for citizens of many countries: ${list.join(", ")}.`
+      );
+    }
+
+    const raw = d3.csvParse(`Country,VWP_country,no_barrier_country,services_suspended,mean_wait,country_abbrv,DMV_pct_pop,days_to_get_visa_for_US_citizen,region,wait_time_difference,population2026,latitude
 El Salvador,0,0,0,30,SV,0.1290010783,0,Americas,-30,6391253.00,13.794185
 India,0,0,0,289.8,IN,0.06800113355,10,Asia,-279.8,1476625576.00,20.593684
 Guatemala,0,0,0,352,GT,0.05030708103,0,Americas,-352,18967978.00,15.783471
@@ -563,376 +711,377 @@ Tajikistan,0,0,0,72,TJ,,0,Asia,-72,10978599.00,38.861034
 Timor-Leste,0,0,0,,TL,,,Asia,,1436923.00,-8.874217
 Tunisia,0,0,0,84,TN,,0,Africa,-84,12415138.00,33.886917
 Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
-{
-  // Parse
-  const data = raw.map(d => ({
-    country: d.Country,
-    abbr: d.country_abbrv,
-    vwp: +d.VWP_country === 1,
-    noBarrier: +d.no_barrier_country === 1,
-    suspended: +d.services_suspended === 1,
-    wait: d.mean_wait === "" ? null : +d.mean_wait,
-    dmv: d.DMV_pct_pop === "" ? null : +d.DMV_pct_pop,
-    visaDaysUS: d.days_to_get_visa_for_US_citizen === "" ? null : +d.days_to_get_visa_for_US_citizen,
-    region: d.region,
-    diff: d.wait_time_difference === "" ? null : +d.wait_time_difference,
-    pop: d.population2026 === "" ? null : +d.population2026.replace(/,/g,""),
-    lat: d.latitude === "" ? null : +d.latitude
-  }));
-
-  const suspendedCountries = ['Afghanistan',
-                              'Angola',
-                              'Antigua and Barbuda',
-                              'Benin',
-                              'Burkina Faso',
-                              'Myanmar',
-                              'Burundi',
-                              'Chad',
-                              'Cote D’Ivoire',
-                              'Cuba',
-                              'Dominica',
-                              'Equatorial Guinea',
-                              'Eritrea',
-                              'Gabon',
-                              'Haiti',
-                              'Iran',
-                              'Laos',
-                              'Libya',
-                              'Malawi',
-                              'Mali',
-                              'Mauritania',
-                              'Niger',
-                              'Nigeria',
-                              'Republic of the Congo',
-                              'Senegal',
-                              'Sierra Leone',
-                              'Somalia',
-                              'South Sudan',
-                              'Sudan',
-                              'Syria',
-                              'Tanzania',
-                              'Gambia',
-                              'Togo',
-                              'Tonga',
-                              'Turkmenistan',
-                              'Venezuela',
-                              'Yemen',
-                              'Zambia',
-                              'Zimbabwe']//data.filter(d=>d.suspended).map(d=>d.country).sort();
-  const expressCountries = data.filter(d=>d.vwp || d.noBarrier);
-
-  // Seeded random for express scatter
-  let seed = 42;
-  function seededRandom() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
-
-  // ========== CHART 1: Wait vs log Population ==========
-  {
-    const W = 1040, H = 560, M = {t:30, r:30, b:50, l:70};
-    const pw = W - M.l - M.r, ph = H - M.t - M.b;
-    const svg = d3.select("#chart1").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
-    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
-
-    const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.pop != null);
-    const express = data.filter(d => (d.vwp || d.noBarrier) && d.pop != null);
-
-    const xMax = d3.max(normal, d=>d.wait);
-    const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
-    const y = d3.scaleLog().domain([d3.min(data.filter(d=>d.pop), d=>d.pop)*0.5, d3.max(data, d=>d.pop)*2]).range([ph, 0]);
-
-    // Grid
-    g.append("g").attr("class","grid").call(d3.axisLeft(y).tickValues([1e5, 1e6, 1e7, 1e8, 1e9]).tickSize(-pw).tickFormat(""));
-    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
-
-    // Express box
-    const boxX = x(-38), boxW = x(-4) - boxX;
-    g.append("rect").attr("x",boxX).attr("y",0).attr("width",boxW).attr("height",ph)
-      .attr("fill","rgba(63,185,80,0.06)").attr("stroke","rgba(63,185,80,0.3)").attr("stroke-dasharray","4,3").attr("rx",6);
-    g.append("text").attr("x", boxX + boxW/2).attr("y", 16).attr("text-anchor","middle")
-      .attr("fill","#3fb950").attr("font-size","11px").attr("font-weight",500).text("Express Review");
-
-    // Axes
-    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d=> d < 0 ? "" : d+"d"));
-    g.append("g").attr("class","axis").call(d3.axisLeft(y).tickValues([1e5, 1e6, 1e7, 1e8, 1e9]).tickFormat(d => {
-      const s = d3.format(".1s")(d);
-      return s.replace("G","B");
-    }));
-    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+42).attr("text-anchor","middle").text("Mean Wait Time (days)");
-    g.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-ph/2).attr("y",-55).attr("text-anchor","middle").text("Population (log scale)");
-
-    // Express dots
-    express.forEach(d => {
-      d._ex = x(-21 + (seededRandom()-0.5)*26);
-      d._ey = y(d.pop);
-    });
-    g.selectAll(".expr").data(express).join("circle")
-      .attr("cx", d=>d._ex).attr("cy", d=>d._ey).attr("r",4.5)
-      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.55).attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.8).attr("stroke-width",0.7)
-      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"Visa Waiver Program":"Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
-      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"Visa Waiver Program":"Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
-      .on("mouseout", hideTip);
-
-    // Normal dots
-    g.selectAll(".norm").data(normal).join("circle")
-      .attr("cx", d=>x(d.wait)).attr("cy", d=>y(d.pop)).attr("r",5)
-      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.65)
-      .attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.9).attr("stroke-width",0.7)
-      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
-      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
-      .on("mouseout", hideTip);
-
-    // Labels for outliers
-    const labelThreshold1 = normal.sort((a,b)=>b.wait-a.wait).slice(0,8);
-    g.selectAll(".lbl").data(labelThreshold1).join("text")
-      .attr("x", d=>x(d.wait)+7).attr("y", d=>y(d.pop)+3)
-      .attr("fill","var(--text-muted)").attr("font-size","9.5px").text(d=>d.abbr);
-
-    buildLegend("#legend1");
-    suspendedNote("#suspended1", suspendedCountries);
-    d3.select("#express-note1").text("Dots in the 'Express Review' box are Visa Waiver Program (VWP) and visa-free countries — their citizens can enter the US with little to no wait.");
-  }
-
-  // ========== CHART 2: Wait vs DMV % ==========
-  {
-    const W = 1040, H = 560, M = {t:30, r:30, b:50, l:80};
-    const pw = W - M.l - M.r, ph = H - M.t - M.b;
-    const svg = d3.select("#chart2").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
-    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
-
-    const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.dmv != null);
-    const express = data.filter(d => (d.vwp || d.noBarrier) && d.dmv != null);
-
-    const xMax = d3.max(normal, d=>d.wait);
-    const yMax = d3.max([...normal, ...express], d=>d.dmv);
-    const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
-    const y = d3.scaleLinear().domain([0, yMax * 1.1]).range([ph, 0]);
-
-    g.append("g").attr("class","grid").call(d3.axisLeft(y).ticks(6).tickSize(-pw).tickFormat(""));
-    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
-
-    const boxX = x(-38), boxW = x(-4) - boxX;
-    g.append("rect").attr("x",boxX).attr("y",0).attr("width",boxW).attr("height",ph)
-      .attr("fill","rgba(63,185,80,0.06)").attr("stroke","rgba(63,185,80,0.3)").attr("stroke-dasharray","4,3").attr("rx",6);
-    g.append("text").attr("x", boxX + boxW/2).attr("y", 16).attr("text-anchor","middle")
-      .attr("fill","#3fb950").attr("font-size","11px").attr("font-weight",500).text("Express Review");
-
-    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d=> d<0?"":d+"d"));
-    g.append("g").attr("class","axis").call(d3.axisLeft(y).ticks(8).tickFormat(d=> (d*100).toFixed(1)+"%"));
-    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+42).attr("text-anchor","middle").text("Mean Wait Time (days)");
-    g.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-ph/2).attr("y",-65).attr("text-anchor","middle").text("Share of DMV Foreign-Born Population (%)");
-
-    express.forEach(d => { d._ex2 = x(-21 + (seededRandom()-0.5)*26); d._ey2 = y(d.dmv); });
-    g.selectAll(".expr").data(express).join("circle")
-      .attr("cx", d=>d._ex2).attr("cy", d=>d._ey2).attr("r",4.5)
-      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.55).attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.8).attr("stroke-width",0.7)
-      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%`))
-      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%`))
-      .on("mouseout", hideTip);
-
-    g.selectAll(".norm").data(normal).join("circle")
-      .attr("cx", d=>x(d.wait)).attr("cy", d=>y(d.dmv)).attr("r",5)
-      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.65)
-      .attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.9).attr("stroke-width",0.7)
-      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%<br>Region: ${d.region}`))
-      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv*100).toFixed(2)}%<br>Region: ${d.region}`))
-      .on("mouseout", hideTip);
-
-    const topDMV = [...normal].sort((a,b)=>b.dmv - a.dmv).slice(0,10);
-    g.selectAll(".lbl").data(topDMV).join("text")
-      .attr("x", d=>x(d.wait)+7).attr("y", d=>y(d.dmv)+3)
-      .attr("fill","var(--text-muted)").attr("font-size","9.5px").text(d=>d.abbr);
-
-    buildLegend("#legend2");
-    suspendedNote("#suspended2", suspendedCountries);
-    d3.select("#express-note2").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
-  }
-
-  // ========== CHART 3: Wait vs Latitude ==========
-  {
-    const W = 1040, H = 560, M = {t:30, r:30, b:50, l:60};
-    const pw = W - M.l - M.r, ph = H - M.t - M.b;
-    const svg = d3.select("#chart3").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
-    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
-
-    const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.lat != null);
-    const express = data.filter(d => (d.vwp || d.noBarrier) && d.lat != null);
-
-    const xMax = d3.max(normal, d=>d.wait);
-    const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
-    const y = d3.scaleLinear().domain([-50, 70]).range([ph, 0]);
-
-    g.append("g").attr("class","grid").call(d3.axisLeft(y).ticks(8).tickSize(-pw).tickFormat(""));
-    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
-
-    // Equator line
-    g.append("line").attr("x1",0).attr("x2",pw).attr("y1",y(0)).attr("y2",y(0))
-      .attr("stroke","rgba(255,255,255,0.15)").attr("stroke-width",1.5);
-    g.append("text").attr("x",pw-4).attr("y",y(0)-5).attr("text-anchor","end")
-      .attr("fill","rgba(255,255,255,0.25)").attr("font-size","10px").text("Equator");
-
-    // Tropic of Cancer (23.5°N)
-    g.append("line").attr("x1",0).attr("x2",pw).attr("y1",y(23.5)).attr("y2",y(23.5))
-      .attr("stroke","rgba(255,180,80,0.2)").attr("stroke-width",1).attr("stroke-dasharray","6,4");
-    g.append("text").attr("x",pw-4).attr("y",y(23.5)-5).attr("text-anchor","end")
-      .attr("fill","rgba(255,180,80,0.35)").attr("font-size","10px").text("Tropic of Cancer (23.5°N)");
-
-    // Tropic of Capricorn (23.5°S)
-    g.append("line").attr("x1",0).attr("x2",pw).attr("y1",y(-23.5)).attr("y2",y(-23.5))
-      .attr("stroke","rgba(255,180,80,0.2)").attr("stroke-width",1).attr("stroke-dasharray","6,4");
-    g.append("text").attr("x",pw-4).attr("y",y(-23.5)-5).attr("text-anchor","end")
-      .attr("fill","rgba(255,180,80,0.35)").attr("font-size","10px").text("Tropic of Capricorn (23.5°S)");
-
-    const boxX = x(-38), boxW = x(-4) - boxX;
-    g.append("rect").attr("x",boxX).attr("y",0).attr("width",boxW).attr("height",ph)
-      .attr("fill","rgba(63,185,80,0.06)").attr("stroke","rgba(63,185,80,0.3)").attr("stroke-dasharray","4,3").attr("rx",6);
-    g.append("text").attr("x", boxX + boxW/2).attr("y", 16).attr("text-anchor","middle")
-      .attr("fill","#3fb950").attr("font-size","11px").attr("font-weight",500).text("Express Review");
-
-    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d=> d<0?"":d+"d"));
-    g.append("g").attr("class","axis").call(d3.axisLeft(y).ticks(8).tickFormat(d=> d+"°"));
-    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+42).attr("text-anchor","middle").text("Mean Wait Time (days)");
-    g.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-ph/2).attr("y",-42).attr("text-anchor","middle").text("Latitude (°N / °S)");
-
-    express.forEach(d => { d._ex3 = x(-21 + (seededRandom()-0.5)*26); d._ey3 = y(d.lat); });
-    g.selectAll(".expr").data(express).join("circle")
-      .attr("cx", d=>d._ex3).attr("cy", d=>d._ey3).attr("r",4.5)
-      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.55).attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.8).attr("stroke-width",0.7)
-      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
-      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>${d.vwp?"VWP":"Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
-      .on("mouseout", hideTip);
-
-    g.selectAll(".norm").data(normal).join("circle")
-      .attr("cx", d=>x(d.wait)).attr("cy", d=>y(d.lat)).attr("r",5)
-      .attr("fill", d=>regionColors[d.region]||"#8b949e").attr("fill-opacity",0.65)
-      .attr("stroke", d=>regionColors[d.region]||"#8b949e").attr("stroke-opacity",0.9).attr("stroke-width",0.7)
-      .on("mouseover", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
-      .on("mousemove", (evt,d)=> showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
-      .on("mouseout", hideTip);
-
-    buildLegend("#legend3");
-    suspendedNote("#suspended3", suspendedCountries);
-    d3.select("#express-note3").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
-  }
-
-  // ========== CHART 4: Reciprocity Dot Plot ==========
-  {
-    // For each country, show wait_time_difference as a dot.
-    // VWP/noBarrier → foreign-to-US = 0, so diff = 0 - visaDaysUS = -visaDaysUS (or 0 if also 0)
-    // Actually the user wants: diff = (foreign wait for US visa) - (US citizen wait for that country's visa)
-    // For VWP/noBarrier: foreign wait = 0, so diff = 0 - visaDaysUS
-    // Suspended: shown at max wait with × markers
-
-    const processedAll = data.filter(d => d.region !== '#N/A').map(d => {
-      let foreignWait, diff;
-      if (d.vwp || d.noBarrier) {
-        foreignWait = 0;
-        diff = d.visaDaysUS != null ? -(d.visaDaysUS) : 0;
-      } else if (d.suspended) {
-        foreignWait = null;
-        diff = null; // will be placed at max
-      } else {
-        foreignWait = d.wait;
-        diff = d.diff;
-      }
-      return { ...d, foreignWait, computedDiff: diff };
-    });
-
-    const withDiff = processedAll.filter(d => d.computedDiff != null && !d.suspended);
-    const suspendedData = processedAll.filter(d => d.suspended);
-
-    // Max absolute diff for scale
-    const maxAbsDiff = d3.max(withDiff, d => Math.abs(d.computedDiff));
-    const maxVal = d3.max(withDiff.map(d=>Math.abs(d.computedDiff)).concat([maxAbsDiff]));
-
-    // Sort by diff
-    const allForPlot = [...withDiff].sort((a,b) => a.computedDiff - b.computedDiff);
-    // Add suspended at the end (will be shown at -maxVal position since US takes way longer for them)
-    const suspSorted = suspendedData.sort((a,b) => a.country.localeCompare(b.country));
-    const plotData = [...allForPlot, ...suspSorted];
-
-    const rowH = 16;
-    const W = 1040, M = {t:30, r:40, b:40, l:220};
-    const pw = W - M.l - M.r;
-    const H = M.t + M.b + plotData.length * rowH;
-    const ph = plotData.length * rowH;
-
-    const svg = d3.select("#chart4").append("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("width","100%");
-    const g = svg.append("g").attr("transform",`translate(${M.l},${M.t})`);
-
-    const x = d3.scaleLinear().domain([-maxVal * 1.08, 20]).range([0, pw]);
-    const yBand = d3.scaleBand().domain(plotData.map(d=>d.country)).range([0, ph]).padding(0.15);
-
-    // Grid
-    g.append("g").attr("class","grid").attr("transform",`translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
-
-    // Zero line
-    g.append("line").attr("x1",x(0)).attr("x2",x(0)).attr("y1",0).attr("y2",ph)
-      .attr("stroke","rgba(255,255,255,0.2)").attr("stroke-width",1.5);
-
-    // Axis
-    g.append("g").attr("class","axis").attr("transform",`translate(0,${ph})`)
-      .call(d3.axisBottom(x).ticks(8).tickFormat(d => {
-        if (d === 0) return "0";
-        return d > 0 ? `+${d}d` : `${d}d`;
+    {
+      // Parse
+      const data = raw.map(d => ({
+        country: d.Country,
+        abbr: d.country_abbrv,
+        vwp: +d.VWP_country === 1,
+        noBarrier: +d.no_barrier_country === 1,
+        suspended: +d.services_suspended === 1,
+        wait: d.mean_wait === "" ? null : +d.mean_wait,
+        dmv: d.DMV_pct_pop === "" ? null : +d.DMV_pct_pop,
+        visaDaysUS: d.days_to_get_visa_for_US_citizen === "" ? null : +d.days_to_get_visa_for_US_citizen,
+        region: d.region,
+        diff: d.wait_time_difference === "" ? null : +d.wait_time_difference,
+        pop: d.population2026 === "" ? null : +d.population2026.replace(/,/g, ""),
+        lat: d.latitude === "" ? null : +d.latitude
       }));
-    g.append("text").attr("class","axis-label").attr("x",pw/2).attr("y",ph+34).attr("text-anchor","middle")
-      .text("← US visa takes longer | Other country takes longer →");
 
-    // Country labels
-    g.selectAll(".ctry-label").data(plotData).join("text")
-      .attr("x", -6).attr("y", d => yBand(d.country) + yBand.bandwidth()/2)
-      .attr("text-anchor","end").attr("dominant-baseline","central")
-      .attr("fill", d => d.suspended ? "#f85149" : regionColors[d.region]||"#8b949e")
-      .attr("font-size","9.5px")
-      .attr("font-weight", d => d.suspended ? 500 : 400)
-      .text(d => d.country);
+      const suspendedCountries = ['Afghanistan',
+        'Angola',
+        'Antigua and Barbuda',
+        'Benin',
+        'Burkina Faso',
+        'Myanmar',
+        'Burundi',
+        'Chad',
+        'Cote D’Ivoire',
+        'Cuba',
+        'Dominica',
+        'Equatorial Guinea',
+        'Eritrea',
+        'Gabon',
+        'Haiti',
+        'Iran',
+        'Laos',
+        'Libya',
+        'Malawi',
+        'Mali',
+        'Mauritania',
+        'Niger',
+        'Nigeria',
+        'Republic of the Congo',
+        'Senegal',
+        'Sierra Leone',
+        'Somalia',
+        'South Sudan',
+        'Sudan',
+        'Syria',
+        'Tanzania',
+        'Gambia',
+        'Togo',
+        'Tonga',
+        'Turkmenistan',
+        'Venezuela',
+        'Yemen',
+        'Zambia',
+        'Zimbabwe']//data.filter(d=>d.suspended).map(d=>d.country).sort();
+      const expressCountries = data.filter(d => d.vwp || d.noBarrier);
 
-    // Dots for non-suspended
-    g.selectAll(".dot").data(withDiff.filter(d => plotData.includes(d))).join("circle")
-      .attr("cx", d => x(d.computedDiff))
-      .attr("cy", d => yBand(d.country) + yBand.bandwidth()/2)
-      .attr("r", 4)
-      .attr("fill", d => regionColors[d.region] || "#8b949e")
-      .attr("fill-opacity", 0.75)
-      .attr("stroke", d => regionColors[d.region] || "#8b949e")
-      .attr("stroke-opacity", 0.9)
-      .on("mouseover", (evt,d) => showTip(evt,
-        `<strong>${d.country}</strong><br>` +
-        `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
-        (d.vwp||d.noBarrier ? `Status: ${d.vwp?"VWP":"Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
-        `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
-      ))
-      .on("mousemove", (evt,d) => showTip(evt,
-        `<strong>${d.country}</strong><br>` +
-        `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
-        (d.vwp||d.noBarrier ? `Status: ${d.vwp?"VWP":"Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
-        `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
-      ))
-      .on("mouseout", hideTip);
+      // Seeded random for express scatter
+      let seed = 42;
+      function seededRandom() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
 
-    // X marks for suspended at -maxVal
-    const crossSize = 4;
-    suspSorted.forEach(d => {
-      const cx = x(-maxVal * 1.02);
-      const cy = yBand(d.country) + yBand.bandwidth()/2;
-      g.append("line").attr("x1",cx-crossSize).attr("y1",cy-crossSize).attr("x2",cx+crossSize).attr("y2",cy+crossSize)
-        .attr("stroke","#f85149").attr("stroke-width",2);
-      g.append("line").attr("x1",cx+crossSize).attr("y1",cy-crossSize).attr("x2",cx-crossSize).attr("y2",cy+crossSize)
-        .attr("stroke","#f85149").attr("stroke-width",2);
-    });
+      // ========== CHART 1: Wait vs log Population ==========
+      {
+        const W = 1040, H = 560, M = { t: 30, r: 30, b: 50, l: 70 };
+        const pw = W - M.l - M.r, ph = H - M.t - M.b;
+        const svg = d3.select("#chart1").append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%");
+        const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
 
-    // Legend for chart 4
-    const leg4 = d3.select("#legend4");
-    Object.entries(regionColors).filter(d=>d[0]!=='#N/A').forEach(([name, color]) => {
-      const it = leg4.append("span").attr("class","legend-item");
-      it.append("span").attr("class","legend-swatch").style("background", color);
-      it.append("span").text(name);
-    });
-    const susItem = leg4.append("span").attr("class","legend-item");
-    susItem.append("span").style("color","#f85149").style("font-weight","bold").style("font-size","14px").text("✕ ");
-    susItem.append("span").text("Services suspended (shown at max)");
-  }
+        const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.pop != null);
+        const express = data.filter(d => (d.vwp || d.noBarrier) && d.pop != null);
 
-}
-</script>
+        const xMax = d3.max(normal, d => d.wait);
+        const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
+        const y = d3.scaleLog().domain([d3.min(data.filter(d => d.pop), d => d.pop) * 0.5, d3.max(data, d => d.pop) * 2]).range([ph, 0]);
+
+        // Grid
+        g.append("g").attr("class", "grid").call(d3.axisLeft(y).tickValues([1e5, 1e6, 1e7, 1e8, 1e9]).tickSize(-pw).tickFormat(""));
+        g.append("g").attr("class", "grid").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+        // Express box
+        const boxX = x(-38), boxW = x(-4) - boxX;
+        g.append("rect").attr("x", boxX).attr("y", 0).attr("width", boxW).attr("height", ph)
+          .attr("fill", "rgba(63,185,80,0.06)").attr("stroke", "rgba(63,185,80,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
+        g.append("text").attr("x", boxX + boxW / 2).attr("y", 16).attr("text-anchor", "middle")
+          .attr("fill", "#3fb950").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
+
+        // Axes
+        g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d => d < 0 ? "" : d + "d"));
+        g.append("g").attr("class", "axis").call(d3.axisLeft(y).tickValues([1e5, 1e6, 1e7, 1e8, 1e9]).tickFormat(d => {
+          const s = d3.format(".1s")(d);
+          return s.replace("G", "B");
+        }));
+        g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 42).attr("text-anchor", "middle").text("Mean Wait Time (days)");
+        g.append("text").attr("class", "axis-label").attr("transform", "rotate(-90)").attr("x", -ph / 2).attr("y", -55).attr("text-anchor", "middle").text("Population (log scale)");
+
+        // Express dots
+        express.forEach(d => {
+          d._ex = x(-21 + (seededRandom() - 0.5) * 26);
+          d._ey = y(d.pop);
+        });
+        g.selectAll(".expr").data(express).join("circle")
+          .attr("cx", d => d._ex).attr("cy", d => d._ey).attr("r", 4.5)
+          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.55).attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.8).attr("stroke-width", 0.7)
+          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "Visa Waiver Program" : "Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
+          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "Visa Waiver Program" : "Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
+          .on("mouseout", hideTip);
+
+        // Normal dots
+        g.selectAll(".norm").data(normal).join("circle")
+          .attr("cx", d => x(d.wait)).attr("cy", d => y(d.pop)).attr("r", 5)
+          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.65)
+          .attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.9).attr("stroke-width", 0.7)
+          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
+          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
+          .on("mouseout", hideTip);
+
+        // Labels for outliers
+        const labelThreshold1 = normal.sort((a, b) => b.wait - a.wait).slice(0, 8);
+        g.selectAll(".lbl").data(labelThreshold1).join("text")
+          .attr("x", d => x(d.wait) + 7).attr("y", d => y(d.pop) + 3)
+          .attr("fill", "var(--text-muted)").attr("font-size", "9.5px").text(d => d.abbr);
+
+        buildLegend("#legend1");
+        suspendedNote("#suspended1", suspendedCountries);
+        d3.select("#express-note1").text("Dots in the 'Express Review' box are Visa Waiver Program (VWP) and visa-free countries — their citizens can enter the US with little to no wait.");
+      }
+
+      // ========== CHART 2: Wait vs DMV % ==========
+      {
+        const W = 1040, H = 560, M = { t: 30, r: 30, b: 50, l: 80 };
+        const pw = W - M.l - M.r, ph = H - M.t - M.b;
+        const svg = d3.select("#chart2").append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%");
+        const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
+
+        const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.dmv != null);
+        const express = data.filter(d => (d.vwp || d.noBarrier) && d.dmv != null);
+
+        const xMax = d3.max(normal, d => d.wait);
+        const yMax = d3.max([...normal, ...express], d => d.dmv);
+        const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
+        const y = d3.scaleLinear().domain([0, yMax * 1.1]).range([ph, 0]);
+
+        g.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(6).tickSize(-pw).tickFormat(""));
+        g.append("g").attr("class", "grid").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+        const boxX = x(-38), boxW = x(-4) - boxX;
+        g.append("rect").attr("x", boxX).attr("y", 0).attr("width", boxW).attr("height", ph)
+          .attr("fill", "rgba(63,185,80,0.06)").attr("stroke", "rgba(63,185,80,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
+        g.append("text").attr("x", boxX + boxW / 2).attr("y", 16).attr("text-anchor", "middle")
+          .attr("fill", "#3fb950").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
+
+        g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d => d < 0 ? "" : d + "d"));
+        g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(8).tickFormat(d => (d * 100).toFixed(1) + "%"));
+        g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 42).attr("text-anchor", "middle").text("Mean Wait Time (days)");
+        g.append("text").attr("class", "axis-label").attr("transform", "rotate(-90)").attr("x", -ph / 2).attr("y", -65).attr("text-anchor", "middle").text("Share of DMV Foreign-Born Population (%)");
+
+        express.forEach(d => { d._ex2 = x(-21 + (seededRandom() - 0.5) * 26); d._ey2 = y(d.dmv); });
+        g.selectAll(".expr").data(express).join("circle")
+          .attr("cx", d => d._ex2).attr("cy", d => d._ey2).attr("r", 4.5)
+          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.55).attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.8).attr("stroke-width", 0.7)
+          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%`))
+          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%`))
+          .on("mouseout", hideTip);
+
+        g.selectAll(".norm").data(normal).join("circle")
+          .attr("cx", d => x(d.wait)).attr("cy", d => y(d.dmv)).attr("r", 5)
+          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.65)
+          .attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.9).attr("stroke-width", 0.7)
+          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%<br>Region: ${d.region}`))
+          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%<br>Region: ${d.region}`))
+          .on("mouseout", hideTip);
+
+        const topDMV = [...normal].sort((a, b) => b.dmv - a.dmv).slice(0, 10);
+        g.selectAll(".lbl").data(topDMV).join("text")
+          .attr("x", d => x(d.wait) + 7).attr("y", d => y(d.dmv) + 3)
+          .attr("fill", "var(--text-muted)").attr("font-size", "9.5px").text(d => d.abbr);
+
+        buildLegend("#legend2");
+        suspendedNote("#suspended2", suspendedCountries);
+        d3.select("#express-note2").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
+      }
+
+      // ========== CHART 3: Wait vs Latitude ==========
+      {
+        const W = 1040, H = 560, M = { t: 30, r: 30, b: 50, l: 60 };
+        const pw = W - M.l - M.r, ph = H - M.t - M.b;
+        const svg = d3.select("#chart3").append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%");
+        const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
+
+        const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.lat != null);
+        const express = data.filter(d => (d.vwp || d.noBarrier) && d.lat != null);
+
+        const xMax = d3.max(normal, d => d.wait);
+        const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
+        const y = d3.scaleLinear().domain([-50, 70]).range([ph, 0]);
+
+        g.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(8).tickSize(-pw).tickFormat(""));
+        g.append("g").attr("class", "grid").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+        // Equator line
+        g.append("line").attr("x1", 0).attr("x2", pw).attr("y1", y(0)).attr("y2", y(0))
+          .attr("stroke", "rgba(255,255,255,0.15)").attr("stroke-width", 1.5);
+        g.append("text").attr("x", pw - 4).attr("y", y(0) - 5).attr("text-anchor", "end")
+          .attr("fill", "rgba(255,255,255,0.25)").attr("font-size", "10px").text("Equator");
+
+        // Tropic of Cancer (23.5°N)
+        g.append("line").attr("x1", 0).attr("x2", pw).attr("y1", y(23.5)).attr("y2", y(23.5))
+          .attr("stroke", "rgba(255,180,80,0.2)").attr("stroke-width", 1).attr("stroke-dasharray", "6,4");
+        g.append("text").attr("x", pw - 4).attr("y", y(23.5) - 5).attr("text-anchor", "end")
+          .attr("fill", "rgba(255,180,80,0.35)").attr("font-size", "10px").text("Tropic of Cancer (23.5°N)");
+
+        // Tropic of Capricorn (23.5°S)
+        g.append("line").attr("x1", 0).attr("x2", pw).attr("y1", y(-23.5)).attr("y2", y(-23.5))
+          .attr("stroke", "rgba(255,180,80,0.2)").attr("stroke-width", 1).attr("stroke-dasharray", "6,4");
+        g.append("text").attr("x", pw - 4).attr("y", y(-23.5) - 5).attr("text-anchor", "end")
+          .attr("fill", "rgba(255,180,80,0.35)").attr("font-size", "10px").text("Tropic of Capricorn (23.5°S)");
+
+        const boxX = x(-38), boxW = x(-4) - boxX;
+        g.append("rect").attr("x", boxX).attr("y", 0).attr("width", boxW).attr("height", ph)
+          .attr("fill", "rgba(63,185,80,0.06)").attr("stroke", "rgba(63,185,80,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
+        g.append("text").attr("x", boxX + boxW / 2).attr("y", 16).attr("text-anchor", "middle")
+          .attr("fill", "#3fb950").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
+
+        g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d => d < 0 ? "" : d + "d"));
+        g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(8).tickFormat(d => d + "°"));
+        g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 42).attr("text-anchor", "middle").text("Mean Wait Time (days)");
+        g.append("text").attr("class", "axis-label").attr("transform", "rotate(-90)").attr("x", -ph / 2).attr("y", -42).attr("text-anchor", "middle").text("Latitude (°N / °S)");
+
+        express.forEach(d => { d._ex3 = x(-21 + (seededRandom() - 0.5) * 26); d._ey3 = y(d.lat); });
+        g.selectAll(".expr").data(express).join("circle")
+          .attr("cx", d => d._ex3).attr("cy", d => d._ey3).attr("r", 4.5)
+          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.55).attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.8).attr("stroke-width", 0.7)
+          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
+          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
+          .on("mouseout", hideTip);
+
+        g.selectAll(".norm").data(normal).join("circle")
+          .attr("cx", d => x(d.wait)).attr("cy", d => y(d.lat)).attr("r", 5)
+          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.65)
+          .attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.9).attr("stroke-width", 0.7)
+          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
+          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
+          .on("mouseout", hideTip);
+
+        buildLegend("#legend3");
+        suspendedNote("#suspended3", suspendedCountries);
+        d3.select("#express-note3").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
+      }
+
+      // ========== CHART 4: Reciprocity Dot Plot ==========
+      {
+        // For each country, show wait_time_difference as a dot.
+        // VWP/noBarrier → foreign-to-US = 0, so diff = 0 - visaDaysUS = -visaDaysUS (or 0 if also 0)
+        // Actually the user wants: diff = (foreign wait for US visa) - (US citizen wait for that country's visa)
+        // For VWP/noBarrier: foreign wait = 0, so diff = 0 - visaDaysUS
+        // Suspended: shown at max wait with × markers
+
+        const processedAll = data.filter(d => d.region !== '#N/A').map(d => {
+          let foreignWait, diff;
+          if (d.vwp || d.noBarrier) {
+            foreignWait = 0;
+            diff = d.visaDaysUS != null ? -(d.visaDaysUS) : 0;
+          } else if (d.suspended) {
+            foreignWait = null;
+            diff = null; // will be placed at max
+          } else {
+            foreignWait = d.wait;
+            diff = d.diff;
+          }
+          return { ...d, foreignWait, computedDiff: diff };
+        });
+
+        const withDiff = processedAll.filter(d => d.computedDiff != null && !d.suspended);
+        const suspendedData = processedAll.filter(d => d.suspended);
+
+        // Max absolute diff for scale
+        const maxAbsDiff = d3.max(withDiff, d => Math.abs(d.computedDiff));
+        const maxVal = d3.max(withDiff.map(d => Math.abs(d.computedDiff)).concat([maxAbsDiff]));
+
+        // Sort by diff
+        const allForPlot = [...withDiff].sort((a, b) => a.computedDiff - b.computedDiff);
+        // Add suspended at the end (will be shown at -maxVal position since US takes way longer for them)
+        const suspSorted = suspendedData.sort((a, b) => a.country.localeCompare(b.country));
+        const plotData = [...allForPlot, ...suspSorted];
+
+        const rowH = 16;
+        const W = 1040, M = { t: 30, r: 40, b: 40, l: 220 };
+        const pw = W - M.l - M.r;
+        const H = M.t + M.b + plotData.length * rowH;
+        const ph = plotData.length * rowH;
+
+        const svg = d3.select("#chart4").append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%");
+        const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
+
+        const x = d3.scaleLinear().domain([-maxVal * 1.08, 20]).range([0, pw]);
+        const yBand = d3.scaleBand().domain(plotData.map(d => d.country)).range([0, ph]).padding(0.15);
+
+        // Grid
+        g.append("g").attr("class", "grid").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+        // Zero line
+        g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", 0).attr("y2", ph)
+          .attr("stroke", "rgba(255,255,255,0.2)").attr("stroke-width", 1.5);
+
+        // Axis
+        g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`)
+          .call(d3.axisBottom(x).ticks(8).tickFormat(d => {
+            if (d === 0) return "0";
+            return d > 0 ? `+${d}d` : `${d}d`;
+          }));
+        g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 34).attr("text-anchor", "middle")
+          .text("← US visa takes longer | Other country takes longer →");
+
+        // Country labels
+        g.selectAll(".ctry-label").data(plotData).join("text")
+          .attr("x", -6).attr("y", d => yBand(d.country) + yBand.bandwidth() / 2)
+          .attr("text-anchor", "end").attr("dominant-baseline", "central")
+          .attr("fill", d => d.suspended ? "#f85149" : regionColors[d.region] || "#8b949e")
+          .attr("font-size", "9.5px")
+          .attr("font-weight", d => d.suspended ? 500 : 400)
+          .text(d => d.country);
+
+        // Dots for non-suspended
+        g.selectAll(".dot").data(withDiff.filter(d => plotData.includes(d))).join("circle")
+          .attr("cx", d => x(d.computedDiff))
+          .attr("cy", d => yBand(d.country) + yBand.bandwidth() / 2)
+          .attr("r", 4)
+          .attr("fill", d => regionColors[d.region] || "#8b949e")
+          .attr("fill-opacity", 0.75)
+          .attr("stroke", d => regionColors[d.region] || "#8b949e")
+          .attr("stroke-opacity", 0.9)
+          .on("mouseover", (evt, d) => showTip(evt,
+            `<strong>${d.country}</strong><br>` +
+            `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
+            (d.vwp || d.noBarrier ? `Status: ${d.vwp ? "VWP" : "Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
+            `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
+          ))
+          .on("mousemove", (evt, d) => showTip(evt,
+            `<strong>${d.country}</strong><br>` +
+            `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
+            (d.vwp || d.noBarrier ? `Status: ${d.vwp ? "VWP" : "Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
+            `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
+          ))
+          .on("mouseout", hideTip);
+
+        // X marks for suspended at -maxVal
+        const crossSize = 4;
+        suspSorted.forEach(d => {
+          const cx = x(-maxVal * 1.02);
+          const cy = yBand(d.country) + yBand.bandwidth() / 2;
+          g.append("line").attr("x1", cx - crossSize).attr("y1", cy - crossSize).attr("x2", cx + crossSize).attr("y2", cy + crossSize)
+            .attr("stroke", "#f85149").attr("stroke-width", 2);
+          g.append("line").attr("x1", cx + crossSize).attr("y1", cy - crossSize).attr("x2", cx - crossSize).attr("y2", cy + crossSize)
+            .attr("stroke", "#f85149").attr("stroke-width", 2);
+        });
+
+        // Legend for chart 4
+        const leg4 = d3.select("#legend4");
+        Object.entries(regionColors).filter(d => d[0] !== '#N/A').forEach(([name, color]) => {
+          const it = leg4.append("span").attr("class", "legend-item");
+          it.append("span").attr("class", "legend-swatch").style("background", color);
+          it.append("span").text(name);
+        });
+        const susItem = leg4.append("span").attr("class", "legend-item");
+        susItem.append("span").style("color", "#f85149").style("font-weight", "bold").style("font-size", "14px").text("✕ ");
+        susItem.append("span").text("Services suspended (shown at max)");
+      }
+
+    }
+  </script>
 </body>
+
 </html>
