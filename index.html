@@ -300,6 +300,67 @@
       border-color: var(--text) !important;
       color: var(--text);
     }
+
+    .source-note {
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    /* ── Tab styles ── */
+    .tabs-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 36px;
+      overflow: hidden;
+    }
+
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tab-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 13px 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.18s, border-color 0.18s;
+      white-space: nowrap;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-panel {
+      display: none;
+      padding: 28px 28px 20px;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
   </style>
 </head>
 
@@ -315,6 +376,9 @@
         your passport, allowing you to visit for 30 days. You proceed to the city's expansive Metro system (or subject
         yourself to LA-grade traffic on surface streets).</p>
       <br>
+      <p>American citizens rarely have to wait long to get a visa to
+        visit another country.</p>
+      <br>
       <p>If you're a Mexican citizen and you want to visit the US, you first have to fill out a DS-160 form. The State
         Department says this should take roughly 90 minutes. Questions include things like "Have you ever been
         10-printed?" and "Have you ever served in, been a member of, or been involved with a paramilitary unit,
@@ -325,105 +389,126 @@
         Mexico, and your job. Assuming you "pass" the interview (whether you pass is largely up to this consular
         officer) you'll have to pay $185 for the privilege of visiting the US.</p>
       <br>
-      <p>In other words, our visa system was unequal, even before the Trump administration made that Family Guy bit with
-        the "skin color chart" our country's explicit foreign policy. Something to think about during the next weekend
-        escape to Cancun.</p>
+      <p>The impacts of these wait times on individual people is brutal. </p>
+      <br>
+      <p>
+        Eduardo is a U.S. citizen. Eduardo's father, who I'll call Roberto,
+        recently died well before his time. Roberto was beloved by his friends and family. He spent his entire
+        professional life helping people in need. Roberto was originally from Columbia and his brother still lives
+        there. Roberto's brother tried to fly to the U.S. to attend his Roberto's funeral. The U.S. Department of State
+        refused to issue him a visa. He could not attend his brother's funeral.
+      </p>
+      <br>
+      <p>Our visa system was unequal, even before the Trump administration made that Family Guy bit with
+        the "skin color chart" our country's explicit foreign policy.
+      </p>
+
+      <br>
+
+      <p>There are, for example, four U.S. missions in Australia, but there is only one in Bangladesh. Australia has a
+        population of 27 million. Bangladesh has a population of 175 million. The wait time for a visa in
+        in Australia is 3 days. The wait time in Bangladesh is 358 days.
+      </p>
       <br>
     </div>
 
-    <div class="chart-section" id="chart1-wrap">
-      <div class="chart-title">Wait Time vs. Population</div>
-      <div class="chart-desc">Each dot is a country. The X-axis shows average wait (in days) for a B1/B2 tourist visa
-        interview. The Y-axis shows country population (log scale). Some foreign citizens can visit the US by filling
-        out a simple online form or by simply showing their passport. These countries are shown at the left of the
-        chart, highlighted in green. Citizens of many other countries, including the three billion residents of China
-        and India, must fill out the DS-160, wait months for that in-person interview at a US embassy, and shell out
-        some cash to Uncle Sam.</div>
-      <div class="legend" id="legend1"></div>
-      <div id="chart1"></div>
-      <div class="express-note" id="express-note1"></div>
-      <div class="suspended-list" id="suspended1"></div>
-      <button class="embed-btn" onclick="showEmbed('chart1-wrap')"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg> Embed this chart</button>
-    </div>
+    <!-- ── All four charts in one tabbed container ── -->
+    <div class="tabs-container">
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab(0)">Wait vs.
+          Population</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(1)">Reciprocity Gap</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(2)">Wait vs. DMV Pop.</button>
+        <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(3)">Wait vs. Latitude</button>
+      </div>
 
-    <div id="para_text">
-      <p>There are huge inequalities in visa wait times. American citizens rarely have to wait long to get a visa to
-        visit another country. Those countries' citizens often have to wait weeks or months--sometimes years--to get a
-        tourist visa to visit the U.S. This is a function of several factors, including the in-person-at-an-embassy
-        interview process the U.S. requires, the limited number of U.S. diplomatic posts abroad, and the general
-        interest in visiting the U.S. There are, for example, four U.S. missions in Australia, but there is only one in
-        Bangladesh. Australia has a population of 27 million. Bangladesh has a population of 175 million.</p>
-      <br>
-      <p>The impacts of these wait times on individual people is brutal. My sister has a close friend I'll call Eduardo,
-        who is a U.S. citizen. Eduardo's father, who I'll call Roberto, recently died well before his time from a tragic
-        medical incident. Roberto was beloved by his friends and family. He spent his entire professional life helping
-        people in need. Roberto was originally from Columbia and his brother still lives there. Roberto's brother tried
-        to fly to the U.S. to attend his Roberto's funeral. The U.S. Department of State refused to issue him a visa. He
-        could not attend the funeral.</p>
-      <br>
-    </div>
+      <!-- Tab 0: chart1 -->
+      <div class="tab-panel active" id="tab-panel-0">
+        <div id="chart1-wrap">
+          <div class="chart-title">Wait Time vs. Population</div>
+          <div class="chart-desc">Each dot is a country. The X-axis shows average wait (in days) for a B1/B2 tourist
+            visa
+            interview. The Y-axis shows country population (log scale). Some foreign citizens can visit the US by
+            filling
+            out a simple online form or by simply showing their passport. These countries are shown at the left of the
+            chart, highlighted in green. Citizens of many other countries, including the three billion residents of
+            China
+            and India, must fill out the DS-160, wait months for that in-person interview at a US embassy, and shell out
+            some cash to Uncle Sam.</div>
+          <div class="legend" id="legend1"></div>
+          <div id="chart1"></div>
+          <div class="express-note" id="express-note1"></div>
+          <div class="suspended-list" id="suspended1"></div>
+          <button class="embed-btn" onclick="showEmbed('chart1-wrap')"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg> Embed this chart</button>
+        </div>
+      </div>
 
-    <div class="chart-section" id="chart4-wrap">
-      <div class="chart-title">Wait times for thee and not for me</div>
-      <div class="chart-desc">For each country: how much longer (in days) does it take their citizens to get a US visa,
-        versus how long it takes Americans to visit them? Negative values means visiting the US takes longer. X marks
-        indicate countries where the US has suspended visa services entirely.</div>
-      <div class="legend" id="legend4"></div>
-      <div id="chart4"></div>
-      <button class="embed-btn" onclick="showEmbed('chart4-wrap')"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg> Embed this chart</button>
-    </div>
+      <!-- Tab 1: chart4 -->
+      <div class="tab-panel" id="tab-panel-1">
+        <div id="chart4-wrap">
+          <div class="chart-title">Wait times for thee and not for me</div>
+          <div class="chart-desc">For each country: how much longer (in days) does it take their citizens to get a US
+            visa,
+            versus how long it takes Americans to visit them? Negative values means visiting the US takes longer. X
+            marks
+            indicate countries where the US has suspended visa services entirely.</div>
+          <div class="legend" id="legend4"></div>
+          <div id="chart4"></div>
+          <button class="embed-btn" onclick="showEmbed('chart4-wrap')"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg> Embed this chart</button>
+        </div>
+      </div>
 
-    <div id="para_text">
-      <p>There are also significant wait time differences among nationalities that predominate in the DMV. Salvadoran
-        citizens face less stiff wait times that Indian, Chinese, Honduran, Guatemalan, and Ethiopian citizens.</p>
-      <br>
-    </div>
+      <!-- Tab 2: chart2 -->
+      <div class="tab-panel" id="tab-panel-2">
+        <div id="chart2-wrap">
+          <div class="chart-title">Wait Time vs. Share of DMV Foreign-Born Population</div>
+          <div class="chart-desc">Y-axis shows each country of origin's share of the DC/MD/VA metro area's foreign-born
+            population. For example, if 13% of all foreign-born DMV residents were born in El Salvador, that country
+            appears
+            at 13%. Countries with the largest local immigrant communities often face among the longest waits.
+            But there are also significant wait time differences among nationalities that predominate in the DMV.
+            Salvadoran
+            citizens face less stiff wait times that Indian, Chinese, Honduran, Guatemalan, and Ethiopian citizens.
+          </div>
+          <div class="legend" id="legend2"></div>
+          <div id="chart2"></div>
+          <div class="express-note" id="express-note2"></div>
+          <div class="suspended-list" id="suspended2"></div>
+          <button class="embed-btn" onclick="showEmbed('chart2-wrap')"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg> Embed this chart</button>
+        </div>
+      </div>
 
-    <div class="chart-section" id="chart2-wrap">
-      <div class="chart-title">Wait Time vs. Share of DMV Foreign-Born Population</div>
-      <div class="chart-desc">Y-axis shows each country of origin's share of the DC/MD/VA metro area's foreign-born
-        population. For example, if 13% of all foreign-born DMV residents were born in El Salvador, that country appears
-        at 13%. Countries with the largest local immigrant communities often face among the longest waits.</div>
-      <div class="legend" id="legend2"></div>
-      <div id="chart2"></div>
-      <div class="express-note" id="express-note2"></div>
-      <div class="suspended-list" id="suspended2"></div>
-      <button class="embed-btn" onclick="showEmbed('chart2-wrap')"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg> Embed this chart</button>
-    </div>
-
-    <div id="para_text">
-      <p>The U.S. government imposes the longest wait times on citizens of equatorial countries--when it issues them
-        visas at all.</p>
-      <br>
-    </div>
-
-    <div class="chart-section" id="chart3-wrap">
-      <div class="chart-title">Wait Time vs. Latitude</div>
-      <div class="chart-desc">Y-axis shows the country's latitude. Citizens of equatorial countries tend to face longer
-        waits.</div>
-      <div class="legend" id="legend3"></div>
-      <div id="chart3"></div>
-      <div class="express-note" id="express-note3"></div>
-      <div class="suspended-list" id="suspended3"></div>
-      <button class="embed-btn" onclick="showEmbed('chart3-wrap')"><svg viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg> Embed this chart</button>
-    </div>
-
+      <!-- Tab 3: chart3 -->
+      <div class="tab-panel" id="tab-panel-3">
+        <div id="chart3-wrap">
+          <div class="chart-title">Wait Time vs. Latitude</div>
+          <div class="chart-desc">Y-axis shows the country's latitude. Citizens of equatorial countries face
+            longer
+            waits--sometimes over a year.</div>
+          <div class="legend" id="legend3"></div>
+          <div id="chart3"></div>
+          <div class="express-note" id="express-note3"></div>
+          <div class="suspended-list" id="suspended3"></div>
+          <button class="embed-btn" onclick="showEmbed('chart3-wrap')"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg> Embed this chart</button>
+        </div>
+      </div>
+    </div><!-- end .tabs-container -->
 
   </div>
 
@@ -442,7 +527,69 @@
     </div>
   </div>
 
+  <br><br>
+
+  <div class="container">
+    <div id="para_text">
+      <p>
+        None of this is good for Americans or the U.S. economy. Trump's policies have created a bigger dip in
+        international visits than the 2008-2009 financial crisis. The U.S. International Trade Administration estimates
+        that every 40 international visitors sustain one U.S. job.
+        Between 2024 and 2025, international arrivals fell by 4,009,072. Using the government's own math, that is
+        100,227 U.S. jobs lost.
+      </p>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="container">
+    <div class="chart-section" id="chart-arrivals-wrap">
+      <div class="chart-title">International Arrivals to the US: Year-over-Year Change</div>
+      <div class="chart-desc">Annual percent change in I-94 arrivals to the United States, 2001-2025.</div>
+      <div id="chart-arrivals"></div>
+      <p class="source-note">Source: <a href="https://www.trade.gov/i-94-arrivals-program" target="_blank"
+          style="color:var(--text-muted);">US International Trade Administration, I-94 Arrivals Program</a>.</p>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="container">
+    <div id="para_text">
+      <p>
+        Washington DC has been especially hard hit. In normal times, international arrivals grow gently over time. In
+        DC, they fell more than 6 percent between 2024 and 2025. (Orlando grew by a lot and Ft. Lauderdale fell by a lot
+        because Southwest switched their international arrival hub from one to the other. Las Vegas grew somewhat
+        because three airlines starting international flights there in early 2025--but the airport saw a drop later in
+        the year).
+      </p>
+    </div>
+
+    <br>
+
+    <div class="chart-section" id="chart-ports-wrap">
+      <div class="chart-title">YTD Change in Arrivals by Port of Entry</div>
+      <div class="chart-desc">Year-to-date percent change in international arrivals at major US ports of entry. Green
+        bars indicate growth; red bars indicate decline. Sorted by change.</div>
+      <div id="chart-ports"></div>
+      <p class="source-note">Source: US International Trade Administration, I-94 Arrivals Program.</p>
+    </div>
+  </div>
+
+
   <script>
+    // ── Tab switching ──
+    function switchTab(index) {
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+        btn.setAttribute('aria-selected', i === index);
+      });
+      document.querySelectorAll('.tab-panel').forEach((panel, i) => {
+        panel.classList.toggle('active', i === index);
+      });
+    }
+
     const chartHeights = {
       'chart1-wrap': 720,
       'chart2-wrap': 720,
@@ -595,7 +742,7 @@ Eritrea,0,0,1,60,ER,0.00297262434,,Africa,-60,3682669.00,15.179384
 Chile,1,0,0,64,CL,0.00287561425,0,Americas,-64,19945850.00,-35.675147
 Israel,1,0,0,91,IL,0.002798594118,3,Middle East,-88,9647689.00,31.046051
 Zambia,0,0,1,31,ZM,0.002762141842,0,Africa,-31,22521915.00,-13.133897
-Cote D’Ivoire,0,0,1,176,CI,0.002446418093,15,Africa,-161,33494346.00,7.539989
+Cote D'Ivoire,0,0,1,176,CI,0.002446418093,15,Africa,-161,33494346.00,7.539989
 Sudan,0,0,1,,SD,0.002339413024,56,Africa,,53282719.00,12.862807
 Senegal,0,0,1,15,SN,0.002265332592,0,Africa,-15,19366548.00,14.497401
 Mongolia,0,0,0,69,MN,0.002203598898,0,Asia,-69,3556798.00,46.862496
@@ -736,7 +883,7 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         'Myanmar',
         'Burundi',
         'Chad',
-        'Cote D’Ivoire',
+        'Cote D\u2019Ivoire',
         'Cuba',
         'Dominica',
         'Equatorial Guinea',
@@ -963,12 +1110,6 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
 
       // ========== CHART 4: Reciprocity Dot Plot ==========
       {
-        // For each country, show wait_time_difference as a dot.
-        // VWP/noBarrier → foreign-to-US = 0, so diff = 0 - visaDaysUS = -visaDaysUS (or 0 if also 0)
-        // Actually the user wants: diff = (foreign wait for US visa) - (US citizen wait for that country's visa)
-        // For VWP/noBarrier: foreign wait = 0, so diff = 0 - visaDaysUS
-        // Suspended: shown at max wait with × markers
-
         const processedAll = data.filter(d => d.region !== '#N/A').map(d => {
           let foreignWait, diff;
           if (d.vwp || d.noBarrier) {
@@ -987,13 +1128,10 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         const withDiff = processedAll.filter(d => d.computedDiff != null && !d.suspended);
         const suspendedData = processedAll.filter(d => d.suspended);
 
-        // Max absolute diff for scale
         const maxAbsDiff = d3.max(withDiff, d => Math.abs(d.computedDiff));
         const maxVal = d3.max(withDiff.map(d => Math.abs(d.computedDiff)).concat([maxAbsDiff]));
 
-        // Sort by diff
         const allForPlot = [...withDiff].sort((a, b) => a.computedDiff - b.computedDiff);
-        // Add suspended at the end (will be shown at -maxVal position since US takes way longer for them)
         const suspSorted = suspendedData.sort((a, b) => a.country.localeCompare(b.country));
         const plotData = [...allForPlot, ...suspSorted];
 
@@ -1009,14 +1147,11 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         const x = d3.scaleLinear().domain([-maxVal * 1.08, 20]).range([0, pw]);
         const yBand = d3.scaleBand().domain(plotData.map(d => d.country)).range([0, ph]).padding(0.15);
 
-        // Grid
         g.append("g").attr("class", "grid").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
 
-        // Zero line
         g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", 0).attr("y2", ph)
           .attr("stroke", "rgba(255,255,255,0.2)").attr("stroke-width", 1.5);
 
-        // Axis
         g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`)
           .call(d3.axisBottom(x).ticks(8).tickFormat(d => {
             if (d === 0) return "0";
@@ -1025,7 +1160,6 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 34).attr("text-anchor", "middle")
           .text("← US visa takes longer | Other country takes longer →");
 
-        // Country labels
         g.selectAll(".ctry-label").data(plotData).join("text")
           .attr("x", -6).attr("y", d => yBand(d.country) + yBand.bandwidth() / 2)
           .attr("text-anchor", "end").attr("dominant-baseline", "central")
@@ -1034,7 +1168,6 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
           .attr("font-weight", d => d.suspended ? 500 : 400)
           .text(d => d.country);
 
-        // Dots for non-suspended
         g.selectAll(".dot").data(withDiff.filter(d => plotData.includes(d))).join("circle")
           .attr("cx", d => x(d.computedDiff))
           .attr("cy", d => yBand(d.country) + yBand.bandwidth() / 2)
@@ -1057,7 +1190,6 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
           ))
           .on("mouseout", hideTip);
 
-        // X marks for suspended at -maxVal
         const crossSize = 4;
         suspSorted.forEach(d => {
           const cx = x(-maxVal * 1.02);
@@ -1068,7 +1200,6 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
             .attr("stroke", "#f85149").attr("stroke-width", 2);
         });
 
-        // Legend for chart 4
         const leg4 = d3.select("#legend4");
         Object.entries(regionColors).filter(d => d[0] !== '#N/A').forEach(([name, color]) => {
           const it = leg4.append("span").attr("class", "legend-item");
@@ -1080,6 +1211,245 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         susItem.append("span").text("Services suspended (shown at max)");
       }
 
+    }
+
+    // ========== ARRIVALS YOY CHART ==========
+    {
+      const arrivalsData = [
+        { year: 2001, yoy: -12.3 },
+        { year: 2002, yoy: -8.2 },
+        { year: 2003, yoy: -4.2 },
+        { year: 2004, yoy: 10.8 },
+        { year: 2005, yoy: 28.9 },
+        { year: 2006, yoy: 3.6 },
+        { year: 2007, yoy: 10.1 },
+        { year: 2008, yoy: 3.3 },
+        { year: 2009, yoy: -5.0 },
+        { year: 2010, yoy: 8.9 },
+        { year: 2011, yoy: 5.8 },
+        { year: 2012, yoy: 5.5 },
+        { year: 2013, yoy: 7.0 },
+        { year: 2014, yoy: 5.2 },
+        { year: 2015, yoy: 3.2 },
+        { year: 2016, yoy: -1.8 },
+        { year: 2017, yoy: 1.0 },
+        { year: 2018, yoy: 3.3 },
+        { year: 2019, yoy: -0.4 },
+        { year: 2020, yoy: -75.8 },
+        { year: 2021, yoy: 16.0 },
+        { year: 2022, yoy: 127.9 },
+        { year: 2023, yoy: 30.7 },
+        { year: 2024, yoy: 9.0 },
+        { year: 2025, yoy: -5.5 },
+      ];
+
+      const W = 1040, H = 500;
+      const M = { t: 40, r: 40, b: 52, l: 72 };
+      const pw = W - M.l - M.r;
+      const ph = H - M.t - M.b;
+
+      const svg = d3.select("#chart-arrivals")
+        .append("svg")
+        .attr("viewBox", `0 0 ${W} ${H}`)
+        .attr("width", "100%");
+
+      const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
+
+      const x = d3.scaleLinear().domain([2001, 2025]).range([0, pw]);
+      const yPad = 14;
+      const y = d3.scaleLinear()
+        .domain([d3.min(arrivalsData, d => d.yoy) - yPad, d3.max(arrivalsData, d => d.yoy) + yPad])
+        .range([ph, 0]);
+
+      // Grid
+      g.append("g").attr("class", "grid")
+        .call(d3.axisLeft(y).ticks(8).tickSize(-pw).tickFormat(""));
+      g.append("g").attr("class", "grid")
+        .attr("transform", `translate(0,${ph})`)
+        .call(d3.axisBottom(x).ticks(arrivalsData.length).tickSize(-ph).tickFormat(""));
+
+      // Zero baseline
+      g.append("line")
+        .attr("x1", 0).attr("x2", pw)
+        .attr("y1", y(0)).attr("y2", y(0))
+        .attr("stroke", "rgba(255,255,255,0.22)")
+        .attr("stroke-width", 1.5);
+      g.append("text")
+        .attr("x", pw + 4).attr("y", y(0) + 4)
+        .attr("fill", "rgba(255,255,255,0.22)")
+        .attr("font-size", "10px")
+        .attr("font-family", "DM Sans, sans-serif")
+        .text("0%");
+
+      // Shaded areas
+      const areaAbove = d3.area().x(d => x(d.year)).y0(y(0)).y1(d => y(Math.max(0, d.yoy)));
+      const areaBelow = d3.area().x(d => x(d.year)).y0(y(0)).y1(d => y(Math.min(0, d.yoy)));
+
+      g.append("path").datum(arrivalsData).attr("d", areaAbove)
+        .attr("fill", "#3fb950").attr("fill-opacity", 0.10);
+      g.append("path").datum(arrivalsData).attr("d", areaBelow)
+        .attr("fill", "#f85149").attr("fill-opacity", 0.10);
+
+      // Line
+      const line = d3.line()
+        .x(d => x(d.year)).y(d => y(d.yoy))
+        .curve(d3.curveMonotoneX);
+
+      g.append("path").datum(arrivalsData).attr("d", line)
+        .attr("fill", "none")
+        .attr("stroke", "#58a6ff")
+        .attr("stroke-width", 2.2)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round");
+
+      // Dots
+      g.selectAll(".adot").data(arrivalsData).join("circle")
+        .attr("cx", d => x(d.year)).attr("cy", d => y(d.yoy)).attr("r", 3.5)
+        .attr("fill", d => d.yoy >= 0 ? "#3fb950" : "#f85149")
+        .attr("stroke", "#161b22").attr("stroke-width", 1.2)
+        .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.year}</strong><br>YoY change: ${d.yoy > 0 ? "+" : ""}${d.yoy}%`))
+        .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.year}</strong><br>YoY change: ${d.yoy > 0 ? "+" : ""}${d.yoy}%`))
+        .on("mouseout", hideTip);
+
+      // Annotations
+      const annotations = [
+        { year: 2001, yoy: -12.3, label: "9/11", dx: 4, dy: -14 },
+        { year: 2005, yoy: 28.9, label: "Post-9/11 rebound", dx: 4, dy: -14 },
+        { year: 2020, yoy: -75.8, label: "COVID-19", dx: 4, dy: 14 },
+        { year: 2022, yoy: 127.9, label: "Rebound", dx: 4, dy: -14 },
+        { year: 2025, yoy: -5.5, label: "2025", dx: 4, dy: -14 },
+      ];
+      annotations.forEach(d => {
+        g.append("text")
+          .attr("x", x(d.year) + d.dx).attr("y", y(d.yoy) + d.dy)
+          .attr("fill", "var(--text-muted)").attr("font-size", "9.5px")
+          .attr("font-family", "DM Sans, sans-serif")
+          .text(d.label);
+      });
+
+      // Axes
+      g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`)
+        .call(d3.axisBottom(x).ticks(arrivalsData.length).tickFormat(d => d % 2 === 1 ? d : ""));
+      g.append("g").attr("class", "axis")
+        .call(d3.axisLeft(y).ticks(8).tickFormat(d => d + "%"));
+
+      g.append("text").attr("class", "axis-label")
+        .attr("x", pw / 2).attr("y", ph + 44).attr("text-anchor", "middle")
+        .text("Year");
+      g.append("text").attr("class", "axis-label")
+        .attr("transform", "rotate(-90)").attr("x", -ph / 2).attr("y", -56)
+        .attr("text-anchor", "middle")
+        .text("Year-over-Year Change (%)");
+    }
+
+
+    // ========== PORT OF ENTRY BAR CHART ==========
+    {
+      const ports = [
+        { port: "New York, NY", ytd: -4.6 },
+        { port: "Miami, FL", ytd: -0.3 },
+        { port: "Los Angeles, CA", ytd: -3.8 },
+        { port: "San Francisco, CA", ytd: -4.3 },
+        { port: "Orlando, FL", ytd: 13.0 },
+        { port: "Newark/Teterboro, NJ", ytd: -0.1 },
+        { port: "Chicago, IL", ytd: -1.6 },
+        { port: "Houston, TX", ytd: -2.4 },
+        { port: "Honolulu, HI", ytd: 4.1 },
+        { port: "Atlanta, GA", ytd: -3.0 },
+        { port: "Dallas, TX", ytd: 0.8 },
+        { port: "Boston, MA", ytd: -0.4 },
+        { port: "Washington, DC", ytd: -6.3 },
+        { port: "Fort Lauderdale, FL", ytd: -12.1 },
+        { port: "Las Vegas, NV", ytd: 5.6 },
+      ].sort((a, b) => a.ytd - b.ytd);
+
+      const W = 1040, M = { t: 20, r: 60, b: 50, l: 180 };
+      const barH = 32, gap = 8;
+      const H = M.t + M.b + ports.length * (barH + gap);
+      const pw = W - M.l - M.r;
+      const ph = H - M.t - M.b;
+
+      const svg = d3.select("#chart-ports")
+        .append("svg")
+        .attr("viewBox", `0 0 ${W} ${H}`)
+        .attr("width", "100%");
+
+      const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
+
+      const xMin = d3.min(ports, d => d.ytd);
+      const xMax = d3.max(ports, d => d.ytd);
+      const x = d3.scaleLinear()
+        .domain([Math.min(xMin * 1.15, -1), Math.max(xMax * 1.15, 1)])
+        .range([0, pw]);
+
+      const yBand = d3.scaleBand()
+        .domain(ports.map(d => d.port))
+        .range([0, ph])
+        .padding(0.2);
+
+      // Grid
+      g.append("g").attr("class", "grid")
+        .attr("transform", `translate(0,${ph})`)
+        .call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+
+      // Zero line
+      g.append("line")
+        .attr("x1", x(0)).attr("x2", x(0))
+        .attr("y1", 0).attr("y2", ph)
+        .attr("stroke", "rgba(255,255,255,0.22)")
+        .attr("stroke-width", 1.5);
+
+      // Bars
+      g.selectAll(".bar")
+        .data(ports)
+        .join("rect")
+        .attr("x", d => d.ytd < 0 ? x(d.ytd) : x(0))
+        .attr("y", d => yBand(d.port))
+        .attr("width", d => Math.abs(x(d.ytd) - x(0)))
+        .attr("height", yBand.bandwidth())
+        .attr("fill", d => d.ytd >= 0 ? "#3fb950" : "#f85149")
+        .attr("fill-opacity", 0.75)
+        .attr("rx", 2)
+        .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.port}</strong><br>YTD change: ${d.ytd > 0 ? "+" : ""}${d.ytd}%`))
+        .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.port}</strong><br>YTD change: ${d.ytd > 0 ? "+" : ""}${d.ytd}%`))
+        .on("mouseout", hideTip);
+
+      // Value labels at end of each bar
+      g.selectAll(".bar-label")
+        .data(ports)
+        .join("text")
+        .attr("x", d => d.ytd >= 0 ? x(d.ytd) + 5 : x(d.ytd) - 5)
+        .attr("y", d => yBand(d.port) + yBand.bandwidth() / 2)
+        .attr("dominant-baseline", "central")
+        .attr("text-anchor", d => d.ytd >= 0 ? "start" : "end")
+        .attr("fill", d => d.ytd >= 0 ? "#3fb950" : "#f85149")
+        .attr("font-size", "11px")
+        .attr("font-family", "DM Sans, sans-serif")
+        .attr("font-weight", 500)
+        .text(d => `${d.ytd > 0 ? "+" : ""}${d.ytd}%`);
+
+      // Port labels (Y axis)
+      g.selectAll(".port-label")
+        .data(ports)
+        .join("text")
+        .attr("x", -10)
+        .attr("y", d => yBand(d.port) + yBand.bandwidth() / 2)
+        .attr("dominant-baseline", "central")
+        .attr("text-anchor", "end")
+        .attr("fill", "var(--text-muted)")
+        .attr("font-size", "11px")
+        .attr("font-family", "DM Sans, sans-serif")
+        .text(d => d.port);
+
+      // X axis
+      g.append("g").attr("class", "axis")
+        .attr("transform", `translate(0,${ph})`)
+        .call(d3.axisBottom(x).ticks(8).tickFormat(d => (d > 0 ? "+" : "") + d + "%"));
+
+      g.append("text").attr("class", "axis-label")
+        .attr("x", pw / 2).attr("y", ph + 42)
+        .attr("text-anchor", "middle")
+        .text("YTD Change (%)");
     }
   </script>
 </body>
