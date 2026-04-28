@@ -629,7 +629,9 @@
   const target = document.getElementById(targetId);
   if (!target) return;
 
-  const tabsContainer = target.closest('.tabs-container');
+  const tabsContainer = target.classList.contains('tabs-container') 
+  ? target 
+  : target.closest('.tabs-container');
 
   if (tabsContainer) {
     // It's a tabbed chart — hide all body-level children except the
