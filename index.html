@@ -623,42 +623,43 @@
     }
 
     // If loaded with a hash, isolate that chart
-(function() {
+(function () {
   if (!window.location.hash) return;
   const targetId = window.location.hash.slice(1);
   const target = document.getElementById(targetId);
   if (!target) return;
 
-  const tabChartIds = new Set(['chart1-wrap', 'chart2-wrap', 'chart3-wrap', 'chart4-wrap']);
+  const tabsContainer = target.closest('.tabs-container');
 
-  if (tabChartIds.has(targetId)) {
-    // It's a tabbed chart: hide everything except .tabs-container, show the right tab
-    document.querySelectorAll('.container > *').forEach(el => {
-      if (!el.classList.contains('tabs-container')) el.style.display = 'none';
+  if (tabsContainer) {
+    // It's a tabbed chart — hide all body-level children except the
+    // container that holds the tabs
+    Array.from(document.body.children).forEach(child => {
+      if (!child.contains(tabsContainer)) child.style.display = 'none';
     });
-    // Hide the other tab panels; show only the one containing our target
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-      const contains = panel.contains(target) || panel.id === target.closest('.tab-panel')?.id;
-      panel.style.display = contains ? 'block' : 'none';
+    // Inside that container, hide siblings of the tabs-container
+    Array.from(tabsContainer.parentElement.children).forEach(child => {
+      if (child !== tabsContainer) child.style.display = 'none';
     });
-    // Hide the tab bar (optional — remove these two lines if you want tabs to stay)
-    const tabBar = document.querySelector('.tab-bar');
+    // Hide the tab navigation bar
+    const tabBar = tabsContainer.querySelector('.tab-bar');
     if (tabBar) tabBar.style.display = 'none';
-  } else {
-    // It's a standalone chart: hide .tabs-container and other chart-sections
-    document.querySelectorAll('.chart-section').forEach(el => {
-      if (el.id !== targetId) el.style.display = 'none';
+    // Show only the panel containing our target
+    tabsContainer.querySelectorAll('.tab-panel').forEach(panel => {
+      panel.style.display = panel.contains(target) ? 'block' : 'none';
     });
-    document.querySelector('.tabs-container')?.style && 
-      (document.querySelector('.tabs-container').style.display = 'none');
+
+  } else {
+    // It's a standalone chart — hide everything that doesn't contain it
+    Array.from(document.body.children).forEach(child => {
+      if (!child.contains(target)) child.style.display = 'none';
+    });
+    // Hide siblings inside the same container
+    Array.from(target.parentElement.children).forEach(child => {
+      if (child !== target) child.style.display = 'none';
+    });
   }
 
-  // Hide all heading/text content
-  document.querySelector('h1')?.style && (document.querySelector('h1').style.display = 'none');
-  document.querySelector('.subtitle')?.style && (document.querySelector('.subtitle').style.display = 'none');
-  document.querySelectorAll('[class="para_text"]').forEach(el => el.style.display = 'none');
-
-  // Hide embed buttons and tighten padding
   target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
   document.body.style.padding = '12px';
 })();
