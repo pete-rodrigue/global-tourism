@@ -634,22 +634,26 @@
   : target.closest('.tabs-container');
 
   if (tabsContainer) {
-    // It's a tabbed chart — hide all body-level children except the
-    // container that holds the tabs
+    // Hide all body-level children except the one containing the tabs
     Array.from(document.body.children).forEach(child => {
       if (!child.contains(tabsContainer)) child.style.display = 'none';
     });
-    // Inside that container, hide siblings of the tabs-container
+    // Hide siblings of the tabs-container inside its parent
     Array.from(tabsContainer.parentElement.children).forEach(child => {
       if (child !== tabsContainer) child.style.display = 'none';
     });
-    // Hide the tab navigation bar
-    const tabBar = tabsContainer.querySelector('.tab-bar');
-    if (tabBar) tabBar.style.display = 'none';
-    // Show only the panel containing our target
-    tabsContainer.querySelectorAll('.tab-panel').forEach(panel => {
-      panel.style.display = panel.contains(target) ? 'block' : 'none';
-    });
+
+    const targetIsContainer = target === tabsContainer;
+    if (!targetIsContainer) {
+      // Embedding a single tab: hide the nav bar and all other panels
+      const tabBar = tabsContainer.querySelector('.tab-bar');
+      if (tabBar) tabBar.style.display = 'none';
+      tabsContainer.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.style.display = panel.contains(target) ? 'block' : 'none';
+      });
+    }
+    // If targetIsContainer, leave the tab bar and all panels untouched
+  }
 
   } else {
     // It's a standalone chart — hide everything that doesn't contain it
