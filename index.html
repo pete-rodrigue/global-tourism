@@ -369,7 +369,7 @@
     <h1>DC is supposed to be a global city.<br>It can take years to visit.</h1>
     <p class="subtitle"></p>
 
-    <div id="para_text">
+    <div class="para_text">
       <p>I recently visited Mexico City. If you're a US citizen and you want to visit Mexico City from DC, you don't
         have to plan ahead. Famously, you don't even have to speak Spanish. You land at Benito Juarez International
         Airport, and a tired but friendly Aduana agent talks to you for 10 seconds before punching a green stamp into
@@ -530,7 +530,7 @@
   <br><br>
 
   <div class="container">
-    <div id="para_text">
+    <div class="para_text">
       <p>
         None of this is good for Americans or the U.S. economy. Trump's policies have created a bigger dip in
         international visits than the 2008-2009 financial crisis. The U.S. International Trade Administration estimates
@@ -556,7 +556,7 @@
   <br>
 
   <div class="container">
-    <div id="para_text">
+    <div class="para_text">
       <p>
         Washington DC has been especially hard hit. In normal times, international arrivals grow gently over time. In
         DC, they fell more than 6 percent between 2024 and 2025. (Orlando grew by a lot and Ft. Lauderdale fell by a lot
@@ -623,27 +623,45 @@
     }
 
     // If loaded with a hash, isolate that chart
-    if (window.location.hash) {
-      const targetId = window.location.hash.slice(1);
-      document.addEventListener('DOMContentLoaded', () => {
-        const target = document.getElementById(targetId);
-        if (target) {
-          // Hide everything except the target chart
-          document.querySelectorAll('.chart-section').forEach(el => {
-            if (el.id !== targetId) el.style.display = 'none';
-          });
-          const h1 = document.querySelector('h1');
-          const sub = document.querySelector('.subtitle');
-          const txt = document.querySelector('#para_text');
-          if (h1) h1.style.display = 'none';
-          if (sub) sub.style.display = 'none';
-          if (txt) txt.style.display = 'none';
-          // Hide embed buttons in isolated mode
-          target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
-          document.body.style.padding = '12px';
-        }
-      });
-    }
+(function() {
+  if (!window.location.hash) return;
+  const targetId = window.location.hash.slice(1);
+  const target = document.getElementById(targetId);
+  if (!target) return;
+
+  const tabChartIds = new Set(['chart1-wrap', 'chart2-wrap', 'chart3-wrap', 'chart4-wrap']);
+
+  if (tabChartIds.has(targetId)) {
+    // It's a tabbed chart: hide everything except .tabs-container, show the right tab
+    document.querySelectorAll('.container > *').forEach(el => {
+      if (!el.classList.contains('tabs-container')) el.style.display = 'none';
+    });
+    // Hide the other tab panels; show only the one containing our target
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      const contains = panel.contains(target) || panel.id === target.closest('.tab-panel')?.id;
+      panel.style.display = contains ? 'block' : 'none';
+    });
+    // Hide the tab bar (optional — remove these two lines if you want tabs to stay)
+    const tabBar = document.querySelector('.tab-bar');
+    if (tabBar) tabBar.style.display = 'none';
+  } else {
+    // It's a standalone chart: hide .tabs-container and other chart-sections
+    document.querySelectorAll('.chart-section').forEach(el => {
+      if (el.id !== targetId) el.style.display = 'none';
+    });
+    document.querySelector('.tabs-container')?.style && 
+      (document.querySelector('.tabs-container').style.display = 'none');
+  }
+
+  // Hide all heading/text content
+  document.querySelector('h1')?.style && (document.querySelector('h1').style.display = 'none');
+  document.querySelector('.subtitle')?.style && (document.querySelector('.subtitle').style.display = 'none');
+  document.querySelectorAll('[class="para_text"]').forEach(el => el.style.display = 'none');
+
+  // Hide embed buttons and tighten padding
+  target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
+  document.body.style.padding = '12px';
+})();
 
     // ---- Main chart code ----
     const CSV_URL = "data:text/csv;base64,";
