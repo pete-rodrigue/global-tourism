@@ -6,25 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>US Visa Wait Times — A Global View</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=DM+Serif+Display&display=swap"
     rel="stylesheet">
   <style>
     :root {
-      --bg: #0e1117;
-      --surface: #161b22;
-      --border: #30363d;
-      --text: #e6edf3;
-      --text-muted: #8b949e;
-      --accent: #58a6ff;
-      --express: #3fb950;
-      --suspended: #f85149;
-      --americas: #FF3EAD;
-      --europe: #2ED9FF;
-      --asia: #7BFF5A;
-      --africa: #FFB100;
-      --middleeast: #C060FF;
-      --oceania: #00D4A1;
+      --bg: #ffffff;
+      --surface: #f7f7f8;
+      --border: #d4d4d8;
+      --text: #1a1a1a;
+      --text-muted: #6b7280;
+      --accent: #2563eb;
+      --express: #16a34a;
+      --suspended: #dc2626;
+      --americas: #e15759;
+      --europe: #4e79a7;
+      --asia: #59a14f;
+      --africa: #f28e2b;
+      --middleeast: #b07aa1;
+      --oceania: #edc948;
     }
 
     * {
@@ -51,9 +52,7 @@
       font-size: 2.6rem;
       margin-bottom: 8px;
       letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #e6edf3, #8b949e);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--text);
     }
 
     .subtitle {
@@ -106,31 +105,12 @@
 
     .grid line {
       stroke: var(--border);
-      stroke-opacity: 0.4;
+      stroke-opacity: 0.5;
       stroke-dasharray: 2, 3;
     }
 
     .grid .domain {
       display: none;
-    }
-
-    .tooltip {
-      position: absolute;
-      pointer-events: none;
-      background: #1c2128;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 12px;
-      color: var(--text);
-      z-index: 100;
-      line-height: 1.5;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      max-width: 260px;
-    }
-
-    .tooltip strong {
-      color: #fff;
     }
 
     .legend {
@@ -158,8 +138,8 @@
     .suspended-list {
       margin-top: 16px;
       padding: 14px 18px;
-      background: rgba(248, 81, 73, 0.07);
-      border: 1px solid rgba(248, 81, 73, 0.25);
+      background: rgba(220, 38, 38, 0.05);
+      border: 1px solid rgba(220, 38, 38, 0.2);
       border-radius: 8px;
       font-size: 0.82rem;
       color: var(--text-muted);
@@ -184,123 +164,6 @@
       opacity: 0.8;
     }
 
-    .embed-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 14px;
-      padding: 6px 14px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text-muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.78rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .embed-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .embed-btn svg {
-      width: 14px;
-      height: 14px;
-    }
-
-    .embed-modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.65);
-      z-index: 200;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .embed-modal-overlay.active {
-      display: flex;
-    }
-
-    .embed-modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 28px 28px 22px;
-      max-width: 620px;
-      width: 90%;
-      position: relative;
-    }
-
-    .embed-modal h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.15rem;
-      margin-bottom: 6px;
-    }
-
-    .embed-modal p {
-      color: var(--text-muted);
-      font-size: 0.82rem;
-      margin-bottom: 14px;
-    }
-
-    .embed-modal textarea {
-      width: 100%;
-      height: 100px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: 'Courier New', monospace;
-      font-size: 0.78rem;
-      padding: 12px;
-      resize: vertical;
-      line-height: 1.5;
-    }
-
-    .embed-modal textarea:focus {
-      outline: 1px solid var(--accent);
-    }
-
-    .embed-modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-      justify-content: flex-end;
-    }
-
-    .embed-modal-actions button {
-      padding: 7px 18px;
-      border-radius: 6px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.82rem;
-      cursor: pointer;
-      border: none;
-      transition: all 0.2s;
-    }
-
-    .btn-copy {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .btn-copy:hover {
-      opacity: 0.85;
-    }
-
-    .btn-close-modal {
-      background: transparent;
-      border: 1px solid var(--border) !important;
-      color: var(--text-muted);
-    }
-
-    .btn-close-modal:hover {
-      border-color: var(--text) !important;
-      color: var(--text);
-    }
-
     .source-note {
       margin-top: 14px;
       font-size: 0.78rem;
@@ -308,58 +171,36 @@
       opacity: 0.7;
     }
 
-    /* ── Tab styles ── */
-    .tabs-container {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 36px;
-      overflow: hidden;
+    .para_text {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      max-width: 720px;
     }
 
-    .tab-bar {
-      display: flex;
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .tab-bar::-webkit-scrollbar {
-      display: none;
-    }
-
-    .tab-btn {
-      flex-shrink: 0;
-      padding: 13px 20px;
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--text-muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: color 0.18s, border-color 0.18s;
-      white-space: nowrap;
-      margin-bottom: -1px;
-    }
-
-    .tab-btn:hover {
-      color: var(--text);
-    }
-
-    .tab-btn.active {
+    .para_text a {
       color: var(--accent);
-      border-bottom-color: var(--accent);
     }
 
-    .tab-panel {
-      display: none;
-      padding: 28px 28px 20px;
+    /* ── Map legend ── */
+    .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
-    .tab-panel.active {
-      display: block;
+    .map-legend-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .map-legend-bar .bar {
+      height: 10px;
+      flex: 1;
     }
   </style>
 </head>
@@ -369,15 +210,14 @@
     <h1>DC is supposed to be a global city.<br>It can take years to visit.</h1>
     <p class="subtitle"></p>
 
-    <div id="para_text">
+    <div class="para_text">
       <p>I recently visited Mexico City. If you're a US citizen and you want to visit Mexico City from DC, you don't
         have to plan ahead. Famously, you don't even have to speak Spanish. You land at Benito Juarez International
         Airport, and a tired but friendly Aduana agent talks to you for 10 seconds before punching a green stamp into
         your passport, allowing you to visit for 30 days. You proceed to the city's expansive Metro system (or subject
         yourself to LA-grade traffic on surface streets).</p>
       <br>
-      <p>American citizens rarely have to wait long to get a visa to
-        visit another country.</p>
+      <p>American citizens rarely have to wait long to visit another country.</p>
       <br>
       <p>If you're a Mexican citizen and you want to visit the US, you first have to fill out a DS-160 form. The State
         Department says this should take roughly 90 minutes. Questions include things like "Have you ever been
@@ -392,11 +232,9 @@
       <p>The impacts of these wait times on individual people is brutal. </p>
       <br>
       <p>
-        Eduardo is a U.S. citizen. Eduardo's father, who I'll call Roberto,
-        recently died well before his time. Roberto was beloved by his friends and family. He spent his entire
-        professional life helping people in need. Roberto was originally from Columbia and his brother still lives
-        there. Roberto's brother tried to fly to the U.S. to attend his Roberto's funeral. The U.S. Department of State
-        refused to issue him a visa. He could not attend his brother's funeral.
+        Roberto was a U.S. Citizen who grew up in Colombia. He died well before his time. Roberto was beloved by his friends and family. He spent his entire
+        professional life helping people in need. Roberto's brother still lives in Colombia, and tried to fly to the U.S. to attend Roberto's funeral. The U.S. Department of State
+        refused to issue him a visa. He could not attend Roberto's funeral.
       </p>
       <br>
       <p>Our visa system was unequal, even before the Trump administration made that Family Guy bit with
@@ -406,268 +244,123 @@
       <br>
 
       <p>There are, for example, four U.S. missions in Australia, but there is only one in Bangladesh. Australia has a
-        population of 27 million. Bangladesh has a population of 175 million. The wait time for a visa in
-        in Australia is 3 days. The wait time in Bangladesh is 358 days.
+        population of 27 million. Bangladesh has a population of 175 million. There is essentially no visa wait time for Australian citizens. The wait time in Bangladesh is 358 days.
       </p>
       <br>
     </div>
 
-    <!-- ── All four charts in one tabbed container ── -->
-    <div class="tabs-container">
-      <div class="tab-bar" role="tablist">
-        <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab(0)">Wait vs.
-          Population</button>
-        <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(1)">Reciprocity Gap</button>
-        <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(2)">Wait vs. DMV Pop.</button>
-        <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab(3)">Wait vs. Latitude</button>
-      </div>
+    <!-- ── Chart 1: Wait vs Population ──
+    <div class="chart-section" id="chart1-wrap">
+      <div class="chart-title">Wait Time vs. Population</div>
+      <div class="chart-desc">Each dot is a country. The X-axis shows average wait (in days) for a B1/B2 tourist
+        visa
+        interview. The Y-axis shows country population (log scale). Some foreign citizens can visit the US by
+        filling
+        out a simple online form or by simply showing their passport. These countries are shown at the left of the
+        chart, highlighted in green. Citizens of many other countries, including the three billion residents of
+        China
+        and India, must fill out the DS-160, wait months for that in-person interview at a US embassy, and shell out
+        some cash to Uncle Sam.</div>
+      <div class="legend" id="legend1"></div>
+      <div id="chart1"></div>
+      <div class="express-note" id="express-note1"></div>
+      <div class="suspended-list" id="suspended1"></div>
+    </div> -->
 
-      <!-- Tab 0: chart1 -->
-      <div class="tab-panel active" id="tab-panel-0">
-        <div id="chart1-wrap">
-          <div class="chart-title">Wait Time vs. Population</div>
-          <div class="chart-desc">Each dot is a country. The X-axis shows average wait (in days) for a B1/B2 tourist
-            visa
-            interview. The Y-axis shows country population (log scale). Some foreign citizens can visit the US by
-            filling
-            out a simple online form or by simply showing their passport. These countries are shown at the left of the
-            chart, highlighted in green. Citizens of many other countries, including the three billion residents of
-            China
-            and India, must fill out the DS-160, wait months for that in-person interview at a US embassy, and shell out
-            some cash to Uncle Sam.</div>
-          <div class="legend" id="legend1"></div>
-          <div id="chart1"></div>
-          <div class="express-note" id="express-note1"></div>
-          <div class="suspended-list" id="suspended1"></div>
-          <button class="embed-btn" onclick="showEmbed('chart1-wrap')"><svg viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6" />
-              <polyline points="8 6 2 12 8 18" />
-            </svg> Embed this chart</button>
-        </div>
-      </div>
-
-      <!-- Tab 1: chart4 -->
-      <div class="tab-panel" id="tab-panel-1">
-        <div id="chart4-wrap">
-          <div class="chart-title">Wait times for thee and not for me</div>
-          <div class="chart-desc">For each country: how much longer (in days) does it take their citizens to get a US
-            visa,
-            versus how long it takes Americans to visit them? Negative values means visiting the US takes longer. X
-            marks
-            indicate countries where the US has suspended visa services entirely.</div>
-          <div class="legend" id="legend4"></div>
-          <div id="chart4"></div>
-          <button class="embed-btn" onclick="showEmbed('chart4-wrap')"><svg viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6" />
-              <polyline points="8 6 2 12 8 18" />
-            </svg> Embed this chart</button>
-        </div>
-      </div>
-
-      <!-- Tab 2: chart2 -->
-      <div class="tab-panel" id="tab-panel-2">
-        <div id="chart2-wrap">
-          <div class="chart-title">Wait Time vs. Share of DMV Foreign-Born Population</div>
-          <div class="chart-desc">Y-axis shows each country of origin's share of the DC/MD/VA metro area's foreign-born
-            population. For example, if 13% of all foreign-born DMV residents were born in El Salvador, that country
-            appears
-            at 13%. Countries with the largest local immigrant communities often face among the longest waits.
-            But there are also significant wait time differences among nationalities that predominate in the DMV.
-            Salvadoran
-            citizens face less stiff wait times that Indian, Chinese, Honduran, Guatemalan, and Ethiopian citizens.
-          </div>
-          <div class="legend" id="legend2"></div>
-          <div id="chart2"></div>
-          <div class="express-note" id="express-note2"></div>
-          <div class="suspended-list" id="suspended2"></div>
-          <button class="embed-btn" onclick="showEmbed('chart2-wrap')"><svg viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6" />
-              <polyline points="8 6 2 12 8 18" />
-            </svg> Embed this chart</button>
-        </div>
-      </div>
-
-      <!-- Tab 3: chart3 -->
-      <div class="tab-panel" id="tab-panel-3">
-        <div id="chart3-wrap">
-          <div class="chart-title">Wait Time vs. Latitude</div>
-          <div class="chart-desc">Y-axis shows the country's latitude. Citizens of equatorial countries face
-            longer
-            waits--sometimes over a year.</div>
-          <div class="legend" id="legend3"></div>
-          <div id="chart3"></div>
-          <div class="express-note" id="express-note3"></div>
-          <div class="suspended-list" id="suspended3"></div>
-          <button class="embed-btn" onclick="showEmbed('chart3-wrap')"><svg viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <polyline points="16 18 22 12 16 6" />
-              <polyline points="8 6 2 12 8 18" />
-            </svg> Embed this chart</button>
-        </div>
-      </div>
-    </div><!-- end .tabs-container -->
-
-  </div>
-
-  <div class="tooltip" id="tip" style="display:none;"></div>
-
-  <div class="embed-modal-overlay" id="embed-overlay" onclick="if(event.target===this)closeEmbed()">
-    <div class="embed-modal">
-      <h3>Embed this chart</h3>
-      <p>Copy the code below and paste it into your website's HTML. Replace <code>YOUR_URL</code> with the URL where you
-        host this page.</p>
-      <textarea id="embed-code" readonly></textarea>
-      <div class="embed-modal-actions">
-        <button class="btn-close-modal" onclick="closeEmbed()">Close</button>
-        <button class="btn-copy" id="copy-btn" onclick="copyEmbed()">Copy code</button>
-      </div>
+    <!-- ── World Map ── -->
+    <div class="chart-section" id="map-wrap">
+      <div class="chart-title">How long do people around the world wait to visit?</div>
+      <div class="chart-desc">Countries colored by average B1/B2 visa wait time. Green countries can enter via the Visa
+        Waiver Program or visa-free. Gray countries have suspended services or no data.</div>
+      <div id="world-map"></div>
+      <div class="map-legend" id="map-legend"></div>
     </div>
-  </div>
 
-  <br><br>
-
-  <div class="container">
-    <div id="para_text">
+    <div class="para_text"> 
       <p>
-        None of this is good for Americans or the U.S. economy. Trump's policies have created a bigger dip in
-        international visits than the 2008-2009 financial crisis. The U.S. International Trade Administration estimates
-        that every 40 international visitors sustain one U.S. job.
-        Between 2024 and 2025, international arrivals fell by 4,009,072. Using the government's own math, that is
-        100,227 U.S. jobs lost.
-      </p>
-    </div>
-  </div>
+        Residents of equatorial countries, like Colombia, are punished particularly hard by America's visa system. The World Cup has provided several examples of this.
+        
+        <br><br>
+        The mother of Cape Verde goalie Vozinha missed her son's game-saving performance because of the exhorbitant visa costs the U.S. imposes on Cape Verdeans, until Marco Rubio intervened to waive a $15,000 bond requirement. 
 
-  <br>
+        <br><br>
 
-  <div class="container">
-    <div class="chart-section" id="chart-arrivals-wrap">
-      <div class="chart-title">International Arrivals to the US: Year-over-Year Change</div>
-      <div class="chart-desc">Annual percent change in I-94 arrivals to the United States, 2001-2025.</div>
-      <div id="chart-arrivals"></div>
-      <p class="source-note">Source: <a href="https://www.trade.gov/i-94-arrivals-program" target="_blank"
-          style="color:var(--text-muted);">US International Trade Administration, I-94 Arrivals Program</a>.</p>
-    </div>
-  </div>
+        Omar Artan, a FIFA referee from Somalia, has overseen world-class matches for a decade, including during the African Cup of Nations. 
+        He was supposed to referee this World Cup, which he said was "the biggest dream of my life." All of his documents were in order and he had a visa.
+        U.S. immigration police detained Omar in Miami International Airport and questioned him for 11 hours. They accused him of being a terrorist, an absurd, insulting claim for which they have provided no evidence, because there is none. 
+        Then they forced him to fly to Somalia. 
+        This is a man who will referee the UEFA Super Cup later this year, who was named Africa's best male referee, and whom the President of Somalia personally praised for his integrity.
 
-  <br>
+        <br><br>
 
-  <div class="container">
-    <div id="para_text">
-      <p>
-        Washington DC has been especially hard hit. In normal times, international arrivals grow gently over time. In
-        DC, they fell more than 6 percent between 2024 and 2025. (Orlando grew by a lot and Ft. Lauderdale fell by a lot
-        because Southwest switched their international arrival hub from one to the other. Las Vegas grew somewhat
-        because three airlines starting international flights there in early 2025--but the airport saw a drop later in
-        the year).
+        The entire Iranian national team had to relocate from the US to Tijuana after Customs denied entry to their support staff.
       </p>
     </div>
 
     <br>
 
-    <div class="chart-section" id="chart-ports-wrap">
-      <div class="chart-title">YTD Change in Arrivals by Port of Entry</div>
-      <div class="chart-desc">Year-to-date percent change in international arrivals at major US ports of entry. Green
-        bars indicate growth; red bars indicate decline. Sorted by change.</div>
-      <div id="chart-ports"></div>
-      <p class="source-note">Source: US International Trade Administration, I-94 Arrivals Program.</p>
+    <!-- ── Chart 3: Wait vs Latitude ── -->
+    <div class="chart-section" id="chart3-wrap">
+      <div class="chart-title">Wait Time vs. Latitude</div>
+      <div class="chart-desc">Y-axis shows the country's latitude. Citizens of equatorial countries face
+        longer
+        waits--sometimes over a year.</div>
+      <div class="legend" id="legend3"></div>
+      <div id="chart3"></div>
+      <div class="express-note" id="express-note3"></div>
+      <div class="suspended-list" id="suspended3"></div>
     </div>
+
+  </div>
+
+  <br><br>
+
+  <div class="container">
+    <div class="para_text">
+      <p>
+        This is all part of the Trump Administration's repugnant campaign to turn American into a white ethnostate. 
+        In June 2026, for example, <a href="https://bsky.app/profile/alexip718.com/post/3mpzmgsopz226">every single one of the 1,062 "refugees" admitted to the U.S. were white South Africans</a>. 
+        No refugees from any other country were admitted. The administration is just refusing to issue visas to citizens of almost 40 nations, or a fifth of the nationalities on earth.
+
+        <br><br>
+
+        This is all stupid and shameful and destructive. It's also financial self-harm. Trump's policies have created a bigger dip in
+        international visits than the 2008-2009 financial crisis. The U.S. International Trade Administration estimates
+        that every 40 international visitors sustain one U.S. job.
+        Between 2024 and 2025, international arrivals fell by 4,009,072. Using the government's own math, that is 100,227 U.S. jobs lost.
+
+        <br><br>
+
+        We owe it to Roberto's family and ourselves to be better than the worst people in America.
+
+      </p>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="container">
+    <div class="para_text">
+      <br>
+    <p>You can find the data used in this post <a href="https://drive.google.com/drive/folders/1qPAC77zpv6d88Umigraijb6K2orcfvpy?usp=sharing">here</a>.</p>
+  </div>
   </div>
 
 
   <script>
-    // ── Tab switching ──
-    function switchTab(index) {
-      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', i === index);
-        btn.setAttribute('aria-selected', i === index);
-      });
-      document.querySelectorAll('.tab-panel').forEach((panel, i) => {
-        panel.classList.toggle('active', i === index);
-      });
-    }
-
-    const chartHeights = {
-      'chart1-wrap': 720,
-      'chart2-wrap': 720,
-      'chart3-wrap': 720,
-      'chart4-wrap': 2900
-    };
-    const chartTitles = {
-      'chart1-wrap': 'Wait Time vs. Population',
-      'chart2-wrap': 'Wait Time vs. DMV Foreign-Born Share',
-      'chart3-wrap': 'Wait Time vs. Latitude',
-      'chart4-wrap': 'The Reciprocity Gap'
-    };
-    function showEmbed(chartId) {
-      const h = chartHeights[chartId] || 700;
-      const title = chartTitles[chartId] || 'Chart';
-      const code = `<!-- ${title} - US Visa Wait Times -->\n<iframe\n  src="YOUR_URL/visa_wait_times.html#${chartId}"\n  width="100%"\n  height="${h}"\n  frameborder="0"\n  style="border: none; max-width: 1100px;"\n  title="${title}"\n></iframe>`;
-      document.getElementById('embed-code').value = code;
-      document.getElementById('embed-overlay').classList.add('active');
-      document.getElementById('copy-btn').textContent = 'Copy code';
-    }
-    function closeEmbed() {
-      document.getElementById('embed-overlay').classList.remove('active');
-    }
-    function copyEmbed() {
-      const ta = document.getElementById('embed-code');
-      ta.select();
-      navigator.clipboard.writeText(ta.value).then(() => {
-        document.getElementById('copy-btn').textContent = 'Copied!';
-        setTimeout(() => { document.getElementById('copy-btn').textContent = 'Copy code'; }, 2000);
-      });
-    }
-
-    // If loaded with a hash, isolate that chart
-    if (window.location.hash) {
-      const targetId = window.location.hash.slice(1);
-      document.addEventListener('DOMContentLoaded', () => {
-        const target = document.getElementById(targetId);
-        if (target) {
-          // Hide everything except the target chart
-          document.querySelectorAll('.chart-section').forEach(el => {
-            if (el.id !== targetId) el.style.display = 'none';
-          });
-          const h1 = document.querySelector('h1');
-          const sub = document.querySelector('.subtitle');
-          const txt = document.querySelector('#para_text');
-          if (h1) h1.style.display = 'none';
-          if (sub) sub.style.display = 'none';
-          if (txt) txt.style.display = 'none';
-          // Hide embed buttons in isolated mode
-          target.querySelectorAll('.embed-btn').forEach(b => b.style.display = 'none');
-          document.body.style.padding = '12px';
-        }
-      });
-    }
-
-    // ---- Main chart code ----
-    const CSV_URL = "data:text/csv;base64,";
-
+    // ── Color scheme (light-theme-friendly, higher contrast) ──
+    // Using a subset of the Tableau 10 categorical palette, which is professionally
+    // designed for maximum perceptual distinction between categories.
+    // These six are picked to avoid any pair looking similar:
     const regionColors = {
-      "Americas": "#FF3EAD",
-      "Europe": "#2ED9FF",
-      "Asia": "#7BFF5A",
-      "Africa": "#FFB100",
-      "Middle East": "#BE6E46",
-      "Oceania": "#C060FF",
-      "#N/A": "#00D4A1"
+      "Americas":   "#e15759",  // coral red
+      "Africa":     "#f28e2b",  // orange
+      "Asia":       "#59a14f",  // medium green
+      "Oceania":    "#edc948",  // yellow  — warm, clearly not orange or green
+      "Europe":     "#4e79a7",  // steel blue — clearly cooler than all warm colors
+      "Middle East": "#b07aa1", // muted purple — clearly different from blue
+      "#N/A": "#6b7280"
     };
-
-    const tip = d3.select("#tip");
-    function showTip(evt, html) {
-      tip.style("display", "block").html(html);
-      const tw = tip.node().offsetWidth, th = tip.node().offsetHeight;
-      let x = evt.pageX + 14, y = evt.pageY - 10;
-      if (x + tw > window.innerWidth - 20) x = evt.pageX - tw - 14;
-      if (y + th > window.innerHeight + window.scrollY - 10) y = evt.pageY - th - 10;
-      tip.style("left", x + "px").style("top", y + "px");
-    }
-    function hideTip() { tip.style("display", "none"); }
 
     function buildLegend(sel) {
       const items = Object.entries(regionColors).filter(d => d[0] !== '#N/A');
@@ -685,6 +378,7 @@
       );
     }
 
+    // ── Parse CSV data ──
     const raw = d3.csvParse(`Country,VWP_country,no_barrier_country,services_suspended,mean_wait,country_abbrv,DMV_pct_pop,days_to_get_visa_for_US_citizen,region,wait_time_difference,population2026,latitude
 El Salvador,0,0,0,30,SV,0.1290010783,0,Americas,-30,6391253.00,13.794185
 India,0,0,0,289.8,IN,0.06800113355,10,Asia,-279.8,1476625576.00,20.593684
@@ -750,7 +444,7 @@ Saudi Arabia,0,0,0,17.33333333,SA,0.002114232027,1,Middle East,-16.33333333,3516
 Indonesia,0,0,0,12,ID,0.002092478249,0,Asia,-12,287886782.00,-0.789275
 Poland,1,0,0,8,PL,0.002077191811,0,Europe,-8,37843188.00,51.919438
 Cuba,0,0,1,,CU,0.00198958876,7,Americas,,10892659.00,21.521757
-Australia,1,0,0,194.6666667,AU,0.001970774681,5,Oceania,-189.6666667,27227096.00,-25.274398
+Australia,1,0,0,3,AU,0.001970774681,5,Oceania,-189.6666667,27227096.00,-25.274398
 Bulgaria,0,0,0,44,BG,0.001951960603,0,Europe,-44,6667659.00,42.733883
 Jordan,0,0,0,36,JO,0.001936674165,0,Middle East,-36,11589532.00,30.585164
 Guinea,0,0,0,42,GN,0.001936086225,3,Africa,-39,15441993.00,9.945587
@@ -858,8 +552,9 @@ Tajikistan,0,0,0,72,TJ,,0,Asia,-72,10978599.00,38.861034
 Timor-Leste,0,0,0,,TL,,,Asia,,1436923.00,-8.874217
 Tunisia,0,0,0,84,TN,,0,Africa,-84,12415138.00,33.886917
 Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
+
     {
-      // Parse
+      // Parse data
       const data = raw.map(d => ({
         country: d.Country,
         abbr: d.country_abbrv,
@@ -913,14 +608,15 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         'Venezuela',
         'Yemen',
         'Zambia',
-        'Zimbabwe']//data.filter(d=>d.suspended).map(d=>d.country).sort();
+        'Zimbabwe'];
       const expressCountries = data.filter(d => d.vwp || d.noBarrier);
 
       // Seeded random for express scatter
       let seed = 42;
       function seededRandom() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
 
-      // ========== CHART 1: Wait vs log Population ==========
+
+      // ========== CHART 1: Wait vs log Population (STATIC) ==========
       {
         const W = 1040, H = 560, M = { t: 30, r: 30, b: 50, l: 70 };
         const pw = W - M.l - M.r, ph = H - M.t - M.b;
@@ -941,9 +637,9 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         // Express box
         const boxX = x(-38), boxW = x(-4) - boxX;
         g.append("rect").attr("x", boxX).attr("y", 0).attr("width", boxW).attr("height", ph)
-          .attr("fill", "rgba(63,185,80,0.06)").attr("stroke", "rgba(63,185,80,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
+          .attr("fill", "rgba(22,163,74,0.05)").attr("stroke", "rgba(22,163,74,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
         g.append("text").attr("x", boxX + boxW / 2).attr("y", 16).attr("text-anchor", "middle")
-          .attr("fill", "#3fb950").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
+          .attr("fill", "#16a34a").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
 
         // Axes
         g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d => d < 0 ? "" : d + "d"));
@@ -954,26 +650,21 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 42).attr("text-anchor", "middle").text("Mean Wait Time (days)");
         g.append("text").attr("class", "axis-label").attr("transform", "rotate(-90)").attr("x", -ph / 2).attr("y", -55).attr("text-anchor", "middle").text("Population (log scale)");
 
-        // Express dots
+        // Express dots (static — no hover)
         express.forEach(d => {
           d._ex = x(-21 + (seededRandom() - 0.5) * 26);
           d._ey = y(d.pop);
         });
         g.selectAll(".expr").data(express).join("circle")
           .attr("cx", d => d._ex).attr("cy", d => d._ey).attr("r", 4.5)
-          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.55).attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.8).attr("stroke-width", 0.7)
-          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "Visa Waiver Program" : "Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
-          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "Visa Waiver Program" : "Visa-free"}<br>Pop: ${d3.format(",")(d.pop)}`))
-          .on("mouseout", hideTip);
+          .attr("fill", d => regionColors[d.region] || "#6b7280").attr("fill-opacity", 0.45)
+          .attr("stroke", d => regionColors[d.region] || "#6b7280").attr("stroke-opacity", 0.7).attr("stroke-width", 0.7);
 
-        // Normal dots
+        // Normal dots (static — no hover)
         g.selectAll(".norm").data(normal).join("circle")
           .attr("cx", d => x(d.wait)).attr("cy", d => y(d.pop)).attr("r", 5)
-          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.65)
-          .attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.9).attr("stroke-width", 0.7)
-          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
-          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Pop: ${d3.format(",")(d.pop)}<br>Region: ${d.region}`))
-          .on("mouseout", hideTip);
+          .attr("fill", d => regionColors[d.region] || "#6b7280").attr("fill-opacity", 0.55)
+          .attr("stroke", d => regionColors[d.region] || "#6b7280").attr("stroke-opacity", 0.85).attr("stroke-width", 0.7);
 
         // Labels for outliers
         const labelThreshold1 = normal.sort((a, b) => b.wait - a.wait).slice(0, 8);
@@ -986,62 +677,8 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         d3.select("#express-note1").text("Dots in the 'Express Review' box are Visa Waiver Program (VWP) and visa-free countries — their citizens can enter the US with little to no wait.");
       }
 
-      // ========== CHART 2: Wait vs DMV % ==========
-      {
-        const W = 1040, H = 560, M = { t: 30, r: 30, b: 50, l: 80 };
-        const pw = W - M.l - M.r, ph = H - M.t - M.b;
-        const svg = d3.select("#chart2").append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%");
-        const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
 
-        const normal = data.filter(d => !d.suspended && !d.vwp && !d.noBarrier && d.wait != null && d.dmv != null);
-        const express = data.filter(d => (d.vwp || d.noBarrier) && d.dmv != null);
-
-        const xMax = d3.max(normal, d => d.wait);
-        const yMax = d3.max([...normal, ...express], d => d.dmv);
-        const x = d3.scaleLinear().domain([-40, xMax * 1.05]).range([0, pw]);
-        const y = d3.scaleLinear().domain([0, yMax * 1.1]).range([ph, 0]);
-
-        g.append("g").attr("class", "grid").call(d3.axisLeft(y).ticks(6).tickSize(-pw).tickFormat(""));
-        g.append("g").attr("class", "grid").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
-
-        const boxX = x(-38), boxW = x(-4) - boxX;
-        g.append("rect").attr("x", boxX).attr("y", 0).attr("width", boxW).attr("height", ph)
-          .attr("fill", "rgba(63,185,80,0.06)").attr("stroke", "rgba(63,185,80,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
-        g.append("text").attr("x", boxX + boxW / 2).attr("y", 16).attr("text-anchor", "middle")
-          .attr("fill", "#3fb950").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
-
-        g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d => d < 0 ? "" : d + "d"));
-        g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(8).tickFormat(d => (d * 100).toFixed(1) + "%"));
-        g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 42).attr("text-anchor", "middle").text("Mean Wait Time (days)");
-        g.append("text").attr("class", "axis-label").attr("transform", "rotate(-90)").attr("x", -ph / 2).attr("y", -65).attr("text-anchor", "middle").text("Share of DMV Foreign-Born Population (%)");
-
-        express.forEach(d => { d._ex2 = x(-21 + (seededRandom() - 0.5) * 26); d._ey2 = y(d.dmv); });
-        g.selectAll(".expr").data(express).join("circle")
-          .attr("cx", d => d._ex2).attr("cy", d => d._ey2).attr("r", 4.5)
-          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.55).attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.8).attr("stroke-width", 0.7)
-          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%`))
-          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%`))
-          .on("mouseout", hideTip);
-
-        g.selectAll(".norm").data(normal).join("circle")
-          .attr("cx", d => x(d.wait)).attr("cy", d => y(d.dmv)).attr("r", 5)
-          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.65)
-          .attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.9).attr("stroke-width", 0.7)
-          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%<br>Region: ${d.region}`))
-          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>DMV foreign-born share: ${(d.dmv * 100).toFixed(2)}%<br>Region: ${d.region}`))
-          .on("mouseout", hideTip);
-
-        const topDMV = [...normal].sort((a, b) => b.dmv - a.dmv).slice(0, 10);
-        g.selectAll(".lbl").data(topDMV).join("text")
-          .attr("x", d => x(d.wait) + 7).attr("y", d => y(d.dmv) + 3)
-          .attr("fill", "var(--text-muted)").attr("font-size", "9.5px").text(d => d.abbr);
-
-        buildLegend("#legend2");
-        suspendedNote("#suspended2", suspendedCountries);
-        d3.select("#express-note2").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
-      }
-
-      // ========== CHART 3: Wait vs Latitude ==========
+      // ========== CHART 3: Wait vs Latitude (STATIC) ==========
       {
         const W = 1040, H = 560, M = { t: 30, r: 30, b: 50, l: 60 };
         const pw = W - M.l - M.r, ph = H - M.t - M.b;
@@ -1060,27 +697,27 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
 
         // Equator line
         g.append("line").attr("x1", 0).attr("x2", pw).attr("y1", y(0)).attr("y2", y(0))
-          .attr("stroke", "rgba(255,255,255,0.15)").attr("stroke-width", 1.5);
+          .attr("stroke", "rgba(0,0,0,0.12)").attr("stroke-width", 1.5);
         g.append("text").attr("x", pw - 4).attr("y", y(0) - 5).attr("text-anchor", "end")
-          .attr("fill", "rgba(255,255,255,0.25)").attr("font-size", "10px").text("Equator");
+          .attr("fill", "rgba(0,0,0,0.25)").attr("font-size", "10px").text("Equator");
 
         // Tropic of Cancer (23.5°N)
         g.append("line").attr("x1", 0).attr("x2", pw).attr("y1", y(23.5)).attr("y2", y(23.5))
-          .attr("stroke", "rgba(255,180,80,0.2)").attr("stroke-width", 1).attr("stroke-dasharray", "6,4");
+          .attr("stroke", "rgba(217,119,6,0.25)").attr("stroke-width", 1).attr("stroke-dasharray", "6,4");
         g.append("text").attr("x", pw - 4).attr("y", y(23.5) - 5).attr("text-anchor", "end")
-          .attr("fill", "rgba(255,180,80,0.35)").attr("font-size", "10px").text("Tropic of Cancer (23.5°N)");
+          .attr("fill", "rgba(217,119,6,0.5)").attr("font-size", "10px").text("Tropic of Cancer (23.5°N)");
 
         // Tropic of Capricorn (23.5°S)
         g.append("line").attr("x1", 0).attr("x2", pw).attr("y1", y(-23.5)).attr("y2", y(-23.5))
-          .attr("stroke", "rgba(255,180,80,0.2)").attr("stroke-width", 1).attr("stroke-dasharray", "6,4");
+          .attr("stroke", "rgba(217,119,6,0.25)").attr("stroke-width", 1).attr("stroke-dasharray", "6,4");
         g.append("text").attr("x", pw - 4).attr("y", y(-23.5) - 5).attr("text-anchor", "end")
-          .attr("fill", "rgba(255,180,80,0.35)").attr("font-size", "10px").text("Tropic of Capricorn (23.5°S)");
+          .attr("fill", "rgba(217,119,6,0.5)").attr("font-size", "10px").text("Tropic of Capricorn (23.5°S)");
 
         const boxX = x(-38), boxW = x(-4) - boxX;
         g.append("rect").attr("x", boxX).attr("y", 0).attr("width", boxW).attr("height", ph)
-          .attr("fill", "rgba(63,185,80,0.06)").attr("stroke", "rgba(63,185,80,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
+          .attr("fill", "rgba(22,163,74,0.05)").attr("stroke", "rgba(22,163,74,0.3)").attr("stroke-dasharray", "4,3").attr("rx", 6);
         g.append("text").attr("x", boxX + boxW / 2).attr("y", 16).attr("text-anchor", "middle")
-          .attr("fill", "#3fb950").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
+          .attr("fill", "#16a34a").attr("font-size", "11px").attr("font-weight", 500).text("Express Review");
 
         g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickFormat(d => d < 0 ? "" : d + "d"));
         g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(8).tickFormat(d => d + "°"));
@@ -1090,366 +727,162 @@ Turkmenistan,0,0,1,60,TM,,14,Asia,-46,7736632.00,38.969719`);
         express.forEach(d => { d._ex3 = x(-21 + (seededRandom() - 0.5) * 26); d._ey3 = y(d.lat); });
         g.selectAll(".expr").data(express).join("circle")
           .attr("cx", d => d._ex3).attr("cy", d => d._ey3).attr("r", 4.5)
-          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.55).attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.8).attr("stroke-width", 0.7)
-          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
-          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>${d.vwp ? "VWP" : "Visa-free"}<br>Lat: ${d.lat.toFixed(1)}°`))
-          .on("mouseout", hideTip);
+          .attr("fill", d => regionColors[d.region] || "#6b7280").attr("fill-opacity", 0.45)
+          .attr("stroke", d => regionColors[d.region] || "#6b7280").attr("stroke-opacity", 0.7).attr("stroke-width", 0.7);
 
         g.selectAll(".norm").data(normal).join("circle")
           .attr("cx", d => x(d.wait)).attr("cy", d => y(d.lat)).attr("r", 5)
-          .attr("fill", d => regionColors[d.region] || "#8b949e").attr("fill-opacity", 0.65)
-          .attr("stroke", d => regionColors[d.region] || "#8b949e").attr("stroke-opacity", 0.9).attr("stroke-width", 0.7)
-          .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
-          .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.country}</strong><br>Wait: ${Math.round(d.wait)} days<br>Lat: ${d.lat.toFixed(1)}°<br>Region: ${d.region}`))
-          .on("mouseout", hideTip);
+          .attr("fill", d => regionColors[d.region] || "#6b7280").attr("fill-opacity", 0.55)
+          .attr("stroke", d => regionColors[d.region] || "#6b7280").attr("stroke-opacity", 0.85).attr("stroke-width", 0.7);
 
         buildLegend("#legend3");
         suspendedNote("#suspended3", suspendedCountries);
         d3.select("#express-note3").text("Dots in the 'Express Review' box are VWP and visa-free countries, colored by region.");
       }
 
-      // ========== CHART 4: Reciprocity Dot Plot ==========
+
+      // ========== WORLD MAP ==========
       {
-        const processedAll = data.filter(d => d.region !== '#N/A').map(d => {
-          let foreignWait, diff;
-          if (d.vwp || d.noBarrier) {
-            foreignWait = 0;
-            diff = d.visaDaysUS != null ? -(d.visaDaysUS) : 0;
-          } else if (d.suspended) {
-            foreignWait = null;
-            diff = null; // will be placed at max
-          } else {
-            foreignWait = d.wait;
-            diff = d.diff;
-          }
-          return { ...d, foreignWait, computedDiff: diff };
+        // Build a lookup: ISO-alpha2 → wait data
+        const byAbbr = {};
+        data.forEach(d => {
+          byAbbr[d.abbr] = d;
         });
 
-        const withDiff = processedAll.filter(d => d.computedDiff != null && !d.suspended);
-        const suspendedData = processedAll.filter(d => d.suspended);
+        // Color scale for wait time (days)
+        // Green for VWP/no-barrier, then a sequential scale from light to dark red
+        const waitColorScale = d3.scaleThreshold()
+          .domain([1, 30, 90, 180, 365])
+          .range(["#fef2f2", "#fecaca", "#f87171", "#dc2626", "#991b1b", "#450a0a"]);
 
-        const maxAbsDiff = d3.max(withDiff, d => Math.abs(d.computedDiff));
-        const maxVal = d3.max(withDiff.map(d => Math.abs(d.computedDiff)).concat([maxAbsDiff]));
+        const vwpColor = "#bbf7d0";          // light green
+        const suspendedColor = "#e5e7eb";    // gray
+        const noDataColor = "#f3f4f6";       // very light gray
+        const usColor = "#dbeafe";           // light blue
 
-        const allForPlot = [...withDiff].sort((a, b) => a.computedDiff - b.computedDiff);
-        const suspSorted = suspendedData.sort((a, b) => a.country.localeCompare(b.country));
-        const plotData = [...allForPlot, ...suspSorted];
+        // ISO-3166 numeric → alpha-2 mapping for the TopoJSON
+        // Natural Earth uses ISO numeric codes as feature IDs
+        const numToAlpha2 = {
+          "4":"AF","8":"AL","12":"DZ","20":"AD","24":"AO","28":"AG","32":"AR","51":"AM","36":"AU",
+          "40":"AT","31":"AZ","44":"BS","48":"BH","50":"BD","52":"BB","112":"BY","56":"BE","84":"BZ",
+          "204":"BJ","64":"BT","68":"BO","70":"BA","72":"BW","76":"BR","96":"BN","100":"BG",
+          "854":"BF","108":"BI","132":"CV","116":"KH","120":"CM","124":"CA","140":"CF","148":"TD",
+          "152":"CL","156":"CN","170":"CO","174":"KM","178":"CG","180":"CD","188":"CR","384":"CI",
+          "191":"HR","192":"CU","196":"CY","203":"CZ","208":"DK","262":"DJ","212":"DM","214":"DO",
+          "218":"EC","818":"EG","222":"SV","226":"GQ","232":"ER","233":"EE","748":"SZ","231":"ET",
+          "242":"FJ","246":"FI","250":"FR","266":"GA","270":"GM","268":"GE","276":"DE","288":"GH",
+          "300":"GR","308":"GD","320":"GT","324":"GN","624":"GW","328":"GY","332":"HT","340":"HN",
+          "348":"HU","352":"IS","356":"IN","360":"ID","364":"IR","368":"IQ","372":"IE","376":"IL",
+          "380":"IT","388":"JM","392":"JP","400":"JO","398":"KZ","404":"KE","296":"KI","-99":"XK",
+          "414":"KW","417":"KG","418":"LA","428":"LV","422":"LB","426":"LS","430":"LR","434":"LY",
+          "438":"LI","440":"LT","442":"LU","450":"MG","454":"MW","458":"MY","462":"MV","466":"ML",
+          "470":"MT","584":"MH","478":"MR","480":"MU","484":"MX","583":"FM","498":"MD","492":"MC",
+          "496":"MN","499":"ME","504":"MA","508":"MZ","104":"MM","516":"NA","520":"NR","524":"NP",
+          "528":"NL","554":"NZ","558":"NI","562":"NE","566":"NG","408":"KP","807":"MK","578":"NO",
+          "512":"OM","586":"PK","585":"PW","275":"PS","591":"PA","598":"PG","600":"PY","604":"PE",
+          "608":"PH","616":"PL","620":"PT","634":"QA","642":"RO","643":"RU","646":"RW","882":"WS",
+          "674":"SM","678":"ST","682":"SA","686":"SN","688":"RS","690":"SC","694":"SL","702":"SG",
+          "703":"SK","705":"SI","90":"SB","706":"SO","710":"ZA","410":"KR","728":"SS","724":"ES",
+          "144":"LK","736":"SD","740":"SR","752":"SE","756":"CH","760":"SY","158":"TW","762":"TJ",
+          "834":"TZ","764":"TH","626":"TL","768":"TG","776":"TO","780":"TT","788":"TN","792":"TR",
+          "795":"TM","798":"TV","800":"UG","804":"UA","784":"AE","826":"GB","840":"US","858":"UY",
+          "860":"UZ","548":"VU","862":"VE","704":"VN","887":"YE","894":"ZM","716":"ZW"
+        };
 
-        const rowH = 16;
-        const W = 1040, M = { t: 30, r: 40, b: 40, l: 220 };
-        const pw = W - M.l - M.r;
-        const H = M.t + M.b + plotData.length * rowH;
-        const ph = plotData.length * rowH;
+        // Fetch world topology
+        const worldUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-        const svg = d3.select("#chart4").append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("width", "100%");
-        const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
+        d3.json(worldUrl).then(world => {
+          const W = 1040, H = 520;
+          const svg = d3.select("#world-map").append("svg")
+            .attr("viewBox", `0 0 ${W} ${H}`)
+            .attr("width", "100%");
 
-        const x = d3.scaleLinear().domain([-maxVal * 1.08, 20]).range([0, pw]);
-        const yBand = d3.scaleBand().domain(plotData.map(d => d.country)).range([0, ph]).padding(0.15);
+          // Natural Earth projection — looks good for thematic maps
+          const projection = d3.geoNaturalEarth1()
+            .fitSize([W - 20, H - 20], topojson.feature(world, world.objects.countries))
+            .translate([W / 2, H / 2]);
 
-        g.append("g").attr("class", "grid").attr("transform", `translate(0,${ph})`).call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
+          const path = d3.geoPath().projection(projection);
 
-        g.append("line").attr("x1", x(0)).attr("x2", x(0)).attr("y1", 0).attr("y2", ph)
-          .attr("stroke", "rgba(255,255,255,0.2)").attr("stroke-width", 1.5);
+          const countries = topojson.feature(world, world.objects.countries).features;
 
-        g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`)
-          .call(d3.axisBottom(x).ticks(8).tickFormat(d => {
-            if (d === 0) return "0";
-            return d > 0 ? `+${d}d` : `${d}d`;
-          }));
-        g.append("text").attr("class", "axis-label").attr("x", pw / 2).attr("y", ph + 34).attr("text-anchor", "middle")
-          .text("← US visa takes longer | Other country takes longer →");
+          // Draw countries
+          svg.selectAll("path")
+            .data(countries)
+            .join("path")
+            .attr("d", path)
+            .attr("fill", d => {
+              const numId = String(parseInt(d.id, 10));   // strips leading zeros: "036" -> "36"
+              const alpha2 = numToAlpha2[numId];
 
-        g.selectAll(".ctry-label").data(plotData).join("text")
-          .attr("x", -6).attr("y", d => yBand(d.country) + yBand.bandwidth() / 2)
-          .attr("text-anchor", "end").attr("dominant-baseline", "central")
-          .attr("fill", d => d.suspended ? "#f85149" : regionColors[d.region] || "#8b949e")
-          .attr("font-size", "9.5px")
-          .attr("font-weight", d => d.suspended ? 500 : 400)
-          .text(d => d.country);
+              // US itself
+              if (alpha2 === "US") return usColor;
 
-        g.selectAll(".dot").data(withDiff.filter(d => plotData.includes(d))).join("circle")
-          .attr("cx", d => x(d.computedDiff))
-          .attr("cy", d => yBand(d.country) + yBand.bandwidth() / 2)
-          .attr("r", 4)
-          .attr("fill", d => regionColors[d.region] || "#8b949e")
-          .attr("fill-opacity", 0.75)
-          .attr("stroke", d => regionColors[d.region] || "#8b949e")
-          .attr("stroke-opacity", 0.9)
-          .on("mouseover", (evt, d) => showTip(evt,
-            `<strong>${d.country}</strong><br>` +
-            `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
-            (d.vwp || d.noBarrier ? `Status: ${d.vwp ? "VWP" : "Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
-            `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
-          ))
-          .on("mousemove", (evt, d) => showTip(evt,
-            `<strong>${d.country}</strong><br>` +
-            `Diff: ${d.computedDiff > 0 ? "+" : ""}${Math.round(d.computedDiff)} days<br>` +
-            (d.vwp || d.noBarrier ? `Status: ${d.vwp ? "VWP" : "Visa-free"}<br>` : `US visa wait: ${d.wait != null ? Math.round(d.wait) : "N/A"} days<br>`) +
-            `US citizen wait: ${d.visaDaysUS != null ? d.visaDaysUS : "N/A"} days`
-          ))
-          .on("mouseout", hideTip);
+              const row = alpha2 ? byAbbr[alpha2] : null;
+              if (!row) return noDataColor;
 
-        const crossSize = 4;
-        suspSorted.forEach(d => {
-          const cx = x(-maxVal * 1.02);
-          const cy = yBand(d.country) + yBand.bandwidth() / 2;
-          g.append("line").attr("x1", cx - crossSize).attr("y1", cy - crossSize).attr("x2", cx + crossSize).attr("y2", cy + crossSize)
-            .attr("stroke", "#f85149").attr("stroke-width", 2);
-          g.append("line").attr("x1", cx + crossSize).attr("y1", cy - crossSize).attr("x2", cx - crossSize).attr("y2", cy + crossSize)
-            .attr("stroke", "#f85149").attr("stroke-width", 2);
+              // VWP or visa-free
+              if (row.vwp || row.noBarrier) return vwpColor;
+
+              // Suspended
+              if (row.suspended) return suspendedColor;
+
+              // Has wait data
+              if (row.wait != null) return waitColorScale(row.wait);
+
+              // No wait data but not suspended
+              return noDataColor;
+            })
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 0.4);
+
+          // Add country labels for a few outliers (directly on map)
+          const labelCountries = [
+            { abbr: "CO", dx: 0, dy: 0 },
+            { abbr: "AE", dx: 0, dy: 0 },
+            { abbr: "IN", dx: 0, dy: 0 },
+            { abbr: "BD", dx: 0, dy: 0 },
+            { abbr: "HN", dx: 0, dy: 0 },
+          ];
+
+          // Build the map legend
+          const legEl = document.getElementById("map-legend");
+
+          // Gradient bar
+          const barDiv = document.createElement("div");
+          barDiv.style.cssText = "width:100%;margin-bottom:6px;";
+          barDiv.innerHTML = `
+            <div style="display:flex;align-items:center;gap:2px;margin-bottom:2px;">
+              <span style="width:28px;height:12px;background:${vwpColor};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">VWP / No barrier</span>
+              <span style="width:12px;"></span>
+              <span style="width:28px;height:12px;background:${waitColorScale(0)};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">< 1 day</span>
+              <span style="width:12px;"></span>
+              <span style="width:28px;height:12px;background:${waitColorScale(15)};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">1–30 days</span>
+              <span style="width:12px;"></span>
+              <span style="width:28px;height:12px;background:${waitColorScale(60)};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">30–90 days</span>
+              <span style="width:12px;"></span>
+              <span style="width:28px;height:12px;background:${waitColorScale(120)};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">90–180 days</span>
+              <span style="width:12px;"></span>
+              <span style="width:28px;height:12px;background:${waitColorScale(200)};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">180–365 days</span>
+              <span style="width:12px;"></span>
+              <span style="width:28px;height:12px;background:${waitColorScale(400)};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">365+ days</span>
+              <span style="width:12px;"></span>
+              <span style="width:28px;height:12px;background:${suspendedColor};border:1px solid #d4d4d8;border-radius:2px;display:inline-block;"></span>
+              <span style="font-size:11px;color:#6b7280;">Suspended / No data</span>
+            </div>
+          `;
+          legEl.appendChild(barDiv);
         });
-
-        const leg4 = d3.select("#legend4");
-        Object.entries(regionColors).filter(d => d[0] !== '#N/A').forEach(([name, color]) => {
-          const it = leg4.append("span").attr("class", "legend-item");
-          it.append("span").attr("class", "legend-swatch").style("background", color);
-          it.append("span").text(name);
-        });
-        const susItem = leg4.append("span").attr("class", "legend-item");
-        susItem.append("span").style("color", "#f85149").style("font-weight", "bold").style("font-size", "14px").text("✕ ");
-        susItem.append("span").text("Services suspended (shown at max)");
       }
 
-    }
-
-    // ========== ARRIVALS YOY CHART ==========
-    {
-      const arrivalsData = [
-        { year: 2001, yoy: -12.3 },
-        { year: 2002, yoy: -8.2 },
-        { year: 2003, yoy: -4.2 },
-        { year: 2004, yoy: 10.8 },
-        { year: 2005, yoy: 28.9 },
-        { year: 2006, yoy: 3.6 },
-        { year: 2007, yoy: 10.1 },
-        { year: 2008, yoy: 3.3 },
-        { year: 2009, yoy: -5.0 },
-        { year: 2010, yoy: 8.9 },
-        { year: 2011, yoy: 5.8 },
-        { year: 2012, yoy: 5.5 },
-        { year: 2013, yoy: 7.0 },
-        { year: 2014, yoy: 5.2 },
-        { year: 2015, yoy: 3.2 },
-        { year: 2016, yoy: -1.8 },
-        { year: 2017, yoy: 1.0 },
-        { year: 2018, yoy: 3.3 },
-        { year: 2019, yoy: -0.4 },
-        { year: 2020, yoy: -75.8 },
-        { year: 2021, yoy: 16.0 },
-        { year: 2022, yoy: 127.9 },
-        { year: 2023, yoy: 30.7 },
-        { year: 2024, yoy: 9.0 },
-        { year: 2025, yoy: -5.5 },
-      ];
-
-      const W = 1040, H = 500;
-      const M = { t: 40, r: 40, b: 52, l: 72 };
-      const pw = W - M.l - M.r;
-      const ph = H - M.t - M.b;
-
-      const svg = d3.select("#chart-arrivals")
-        .append("svg")
-        .attr("viewBox", `0 0 ${W} ${H}`)
-        .attr("width", "100%");
-
-      const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
-
-      const x = d3.scaleLinear().domain([2001, 2025]).range([0, pw]);
-      const yPad = 14;
-      const y = d3.scaleLinear()
-        .domain([d3.min(arrivalsData, d => d.yoy) - yPad, d3.max(arrivalsData, d => d.yoy) + yPad])
-        .range([ph, 0]);
-
-      // Grid
-      g.append("g").attr("class", "grid")
-        .call(d3.axisLeft(y).ticks(8).tickSize(-pw).tickFormat(""));
-      g.append("g").attr("class", "grid")
-        .attr("transform", `translate(0,${ph})`)
-        .call(d3.axisBottom(x).ticks(arrivalsData.length).tickSize(-ph).tickFormat(""));
-
-      // Zero baseline
-      g.append("line")
-        .attr("x1", 0).attr("x2", pw)
-        .attr("y1", y(0)).attr("y2", y(0))
-        .attr("stroke", "rgba(255,255,255,0.22)")
-        .attr("stroke-width", 1.5);
-      g.append("text")
-        .attr("x", pw + 4).attr("y", y(0) + 4)
-        .attr("fill", "rgba(255,255,255,0.22)")
-        .attr("font-size", "10px")
-        .attr("font-family", "DM Sans, sans-serif")
-        .text("0%");
-
-      // Shaded areas
-      const areaAbove = d3.area().x(d => x(d.year)).y0(y(0)).y1(d => y(Math.max(0, d.yoy)));
-      const areaBelow = d3.area().x(d => x(d.year)).y0(y(0)).y1(d => y(Math.min(0, d.yoy)));
-
-      g.append("path").datum(arrivalsData).attr("d", areaAbove)
-        .attr("fill", "#3fb950").attr("fill-opacity", 0.10);
-      g.append("path").datum(arrivalsData).attr("d", areaBelow)
-        .attr("fill", "#f85149").attr("fill-opacity", 0.10);
-
-      // Line
-      const line = d3.line()
-        .x(d => x(d.year)).y(d => y(d.yoy))
-        .curve(d3.curveMonotoneX);
-
-      g.append("path").datum(arrivalsData).attr("d", line)
-        .attr("fill", "none")
-        .attr("stroke", "#58a6ff")
-        .attr("stroke-width", 2.2)
-        .attr("stroke-linejoin", "round")
-        .attr("stroke-linecap", "round");
-
-      // Dots
-      g.selectAll(".adot").data(arrivalsData).join("circle")
-        .attr("cx", d => x(d.year)).attr("cy", d => y(d.yoy)).attr("r", 3.5)
-        .attr("fill", d => d.yoy >= 0 ? "#3fb950" : "#f85149")
-        .attr("stroke", "#161b22").attr("stroke-width", 1.2)
-        .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.year}</strong><br>YoY change: ${d.yoy > 0 ? "+" : ""}${d.yoy}%`))
-        .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.year}</strong><br>YoY change: ${d.yoy > 0 ? "+" : ""}${d.yoy}%`))
-        .on("mouseout", hideTip);
-
-      // Annotations
-      const annotations = [
-        { year: 2001, yoy: -12.3, label: "9/11", dx: 4, dy: -14 },
-        { year: 2005, yoy: 28.9, label: "Post-9/11 rebound", dx: 4, dy: -14 },
-        { year: 2020, yoy: -75.8, label: "COVID-19", dx: 4, dy: 14 },
-        { year: 2022, yoy: 127.9, label: "Rebound", dx: 4, dy: -14 },
-        { year: 2025, yoy: -5.5, label: "2025", dx: 4, dy: -14 },
-      ];
-      annotations.forEach(d => {
-        g.append("text")
-          .attr("x", x(d.year) + d.dx).attr("y", y(d.yoy) + d.dy)
-          .attr("fill", "var(--text-muted)").attr("font-size", "9.5px")
-          .attr("font-family", "DM Sans, sans-serif")
-          .text(d.label);
-      });
-
-      // Axes
-      g.append("g").attr("class", "axis").attr("transform", `translate(0,${ph})`)
-        .call(d3.axisBottom(x).ticks(arrivalsData.length).tickFormat(d => d % 2 === 1 ? d : ""));
-      g.append("g").attr("class", "axis")
-        .call(d3.axisLeft(y).ticks(8).tickFormat(d => d + "%"));
-
-      g.append("text").attr("class", "axis-label")
-        .attr("x", pw / 2).attr("y", ph + 44).attr("text-anchor", "middle")
-        .text("Year");
-      g.append("text").attr("class", "axis-label")
-        .attr("transform", "rotate(-90)").attr("x", -ph / 2).attr("y", -56)
-        .attr("text-anchor", "middle")
-        .text("Year-over-Year Change (%)");
-    }
-
-
-    // ========== PORT OF ENTRY BAR CHART ==========
-    {
-      const ports = [
-        { port: "New York, NY", ytd: -4.6 },
-        { port: "Miami, FL", ytd: -0.3 },
-        { port: "Los Angeles, CA", ytd: -3.8 },
-        { port: "San Francisco, CA", ytd: -4.3 },
-        { port: "Orlando, FL", ytd: 13.0 },
-        { port: "Newark/Teterboro, NJ", ytd: -0.1 },
-        { port: "Chicago, IL", ytd: -1.6 },
-        { port: "Houston, TX", ytd: -2.4 },
-        { port: "Honolulu, HI", ytd: 4.1 },
-        { port: "Atlanta, GA", ytd: -3.0 },
-        { port: "Dallas, TX", ytd: 0.8 },
-        { port: "Boston, MA", ytd: -0.4 },
-        { port: "Washington, DC", ytd: -6.3 },
-        { port: "Fort Lauderdale, FL", ytd: -12.1 },
-        { port: "Las Vegas, NV", ytd: 5.6 },
-      ].sort((a, b) => a.ytd - b.ytd);
-
-      const W = 1040, M = { t: 20, r: 60, b: 50, l: 180 };
-      const barH = 32, gap = 8;
-      const H = M.t + M.b + ports.length * (barH + gap);
-      const pw = W - M.l - M.r;
-      const ph = H - M.t - M.b;
-
-      const svg = d3.select("#chart-ports")
-        .append("svg")
-        .attr("viewBox", `0 0 ${W} ${H}`)
-        .attr("width", "100%");
-
-      const g = svg.append("g").attr("transform", `translate(${M.l},${M.t})`);
-
-      const xMin = d3.min(ports, d => d.ytd);
-      const xMax = d3.max(ports, d => d.ytd);
-      const x = d3.scaleLinear()
-        .domain([Math.min(xMin * 1.15, -1), Math.max(xMax * 1.15, 1)])
-        .range([0, pw]);
-
-      const yBand = d3.scaleBand()
-        .domain(ports.map(d => d.port))
-        .range([0, ph])
-        .padding(0.2);
-
-      // Grid
-      g.append("g").attr("class", "grid")
-        .attr("transform", `translate(0,${ph})`)
-        .call(d3.axisBottom(x).ticks(8).tickSize(-ph).tickFormat(""));
-
-      // Zero line
-      g.append("line")
-        .attr("x1", x(0)).attr("x2", x(0))
-        .attr("y1", 0).attr("y2", ph)
-        .attr("stroke", "rgba(255,255,255,0.22)")
-        .attr("stroke-width", 1.5);
-
-      // Bars
-      g.selectAll(".bar")
-        .data(ports)
-        .join("rect")
-        .attr("x", d => d.ytd < 0 ? x(d.ytd) : x(0))
-        .attr("y", d => yBand(d.port))
-        .attr("width", d => Math.abs(x(d.ytd) - x(0)))
-        .attr("height", yBand.bandwidth())
-        .attr("fill", d => d.ytd >= 0 ? "#3fb950" : "#f85149")
-        .attr("fill-opacity", 0.75)
-        .attr("rx", 2)
-        .on("mouseover", (evt, d) => showTip(evt, `<strong>${d.port}</strong><br>YTD change: ${d.ytd > 0 ? "+" : ""}${d.ytd}%`))
-        .on("mousemove", (evt, d) => showTip(evt, `<strong>${d.port}</strong><br>YTD change: ${d.ytd > 0 ? "+" : ""}${d.ytd}%`))
-        .on("mouseout", hideTip);
-
-      // Value labels at end of each bar
-      g.selectAll(".bar-label")
-        .data(ports)
-        .join("text")
-        .attr("x", d => d.ytd >= 0 ? x(d.ytd) + 5 : x(d.ytd) - 5)
-        .attr("y", d => yBand(d.port) + yBand.bandwidth() / 2)
-        .attr("dominant-baseline", "central")
-        .attr("text-anchor", d => d.ytd >= 0 ? "start" : "end")
-        .attr("fill", d => d.ytd >= 0 ? "#3fb950" : "#f85149")
-        .attr("font-size", "11px")
-        .attr("font-family", "DM Sans, sans-serif")
-        .attr("font-weight", 500)
-        .text(d => `${d.ytd > 0 ? "+" : ""}${d.ytd}%`);
-
-      // Port labels (Y axis)
-      g.selectAll(".port-label")
-        .data(ports)
-        .join("text")
-        .attr("x", -10)
-        .attr("y", d => yBand(d.port) + yBand.bandwidth() / 2)
-        .attr("dominant-baseline", "central")
-        .attr("text-anchor", "end")
-        .attr("fill", "var(--text-muted)")
-        .attr("font-size", "11px")
-        .attr("font-family", "DM Sans, sans-serif")
-        .text(d => d.port);
-
-      // X axis
-      g.append("g").attr("class", "axis")
-        .attr("transform", `translate(0,${ph})`)
-        .call(d3.axisBottom(x).ticks(8).tickFormat(d => (d > 0 ? "+" : "") + d + "%"));
-
-      g.append("text").attr("class", "axis-label")
-        .attr("x", pw / 2).attr("y", ph + 42)
-        .attr("text-anchor", "middle")
-        .text("YTD Change (%)");
     }
   </script>
 </body>
